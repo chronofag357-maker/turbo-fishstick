@@ -104,3 +104,26 @@ function rouletteSpin(betColor) {
   const winMultiplier = color === betColor ? ROULETTE_PAYOUTS[betColor] : 0;
   return { number, color, winMultiplier };
 }
+
+// ---- Reaction game ("Лови коэффициент") ----
+// Three bookmaker-style odds boxes fall down the screen; the player has to
+// tap the current highest one before it lands. Skill/reflex game, not a
+// bet — points are only awarded for correct catches.
+
+function reactionRandomOdd() {
+  const r = Math.random();
+  if (r < 0.55) return +(1.1 + Math.random() * 1.9).toFixed(2); // common: 1.10-3.00
+  if (r < 0.85) return +(3.0 + Math.random() * 4.0).toFixed(2); // 3.00-7.00
+  if (r < 0.97) return +(7.0 + Math.random() * 8.0).toFixed(2); // 7.00-15.00
+  return +(15.0 + Math.random() * 20.0).toFixed(2); // rare spike: 15.00-35.00
+}
+
+// Three distinct odds with the top two at least 0.05 apart, so there is
+// always one unambiguous "biggest" box.
+function reactionGenerateRound() {
+  while (true) {
+    const odds = [reactionRandomOdd(), reactionRandomOdd(), reactionRandomOdd()];
+    const sorted = [...odds].sort((a, b) => b - a);
+    if (new Set(odds).size === 3 && sorted[0] - sorted[1] >= 0.05) return odds;
+  }
+}
