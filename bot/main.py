@@ -16,6 +16,7 @@ from bot.handlers import (
     compare,
     events,
     freeform,
+    game,
     news,
     odds,
     profiles,
@@ -47,6 +48,7 @@ async def main() -> None:
     # Order matters: admin (stateful) and specific handlers must come before the
     # freeform catch-all, otherwise it would swallow every text message first.
     dp.include_router(start.router)
+    dp.include_router(game.router)
     dp.include_router(admin_handlers.router)
     dp.include_router(sports.router)
     dp.include_router(events.router)

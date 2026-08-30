@@ -654,4 +654,11 @@ if (tg) {
   tg.BackButton.onClick(goBack);
 }
 
-goHome();
+// Opened via the bot's native Game card (sendGame -> answerCallbackQuery
+// url=...?view=casino) jumps straight to the casino instead of home.
+const startView = new URLSearchParams(window.location.search).get("view");
+if (startView === "casino") {
+  navigate("casino");
+} else {
+  goHome();
+}
