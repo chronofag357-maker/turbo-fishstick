@@ -60,7 +60,17 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 
+let activeCleanup = null;
+
+function onCleanup(fn) {
+  activeCleanup = fn;
+}
+
 function render() {
+  if (activeCleanup) {
+    activeCleanup();
+    activeCleanup = null;
+  }
   const current = stack[stack.length - 1];
   app.innerHTML = "";
 
@@ -90,6 +100,7 @@ function render() {
     casino: renderCasino,
     slots: renderSlots,
     roulette: renderRoulette,
+    reactionGame: renderReactionGame,
   };
 
   const renderer = screens[current.view] || renderHome;
@@ -492,6 +503,7 @@ function renderCasino() {
   );
   main.appendChild(el("button", { class: "btn", text: "🎰 Слоты", onclick: () => navigate("slots") }));
   main.appendChild(el("button", { class: "btn", text: "🎡 Рулетка", onclick: () => navigate("roulette") }));
+  main.appendChild(el("button", { class: "btn", text: "⚡ Лови коэффициент", onclick: () => navigate("reactionGame") }));
   main.appendChild(
     el("button", {
       class: "btn secondary",
@@ -641,6 +653,135 @@ function renderRoulette() {
   main.appendChild(spinBtn);
 
   wrap.appendChild(main);
+  return wrap;
+}
+
+function renderReactionGame() {
+  const wrap = el("div");
+  wrap.appendChild(topbar("⚡ Лови коэффициент"));
+  const main = el("main");
+
+  main.appendChild(
+    el("p", {
+      class: "subtitle",
+      text: "Сверху падают три коэффициента. Успей нажать на самый большой, пока он не долетел до низа.",
+    })
+  );
+
+  const hud = el("div", { class: "reaction-hud" });
+  const livesEl = el("span", { text: "❤️❤️❤️" });
+  const scoreEl = el("span", { text: "Очки: 0" });
+  hud.appendChild(livesEl);
+  hud.appendChild(scoreEl);
+  main.appendChild(hud);
+
+  const arena = el("div", { class: "reaction-arena" });
+  const messageEl = el("div", { class: "subtitle reaction-message", text: "Приготовься..." });
+  const playArea = el("div", {}, [arena, messageEl]);
+  main.appendChild(playArea);
+
+  const overArea = el("div");
+  overArea.style.display = "none";
+  main.appendChild(overArea);
+
+  wrap.appendChild(main);
+
+  let lives = 3;
+  let score = 0;
+  let duration = 2200;
+  let roundActive = false;
+  let missTimer = null;
+  let nextRoundTimer = null;
+
+  function updateHud() {
+    livesEl.textContent = "❤️".repeat(Math.max(0, lives)) + "🖤".repeat(Math.max(0, 3 - lives));
+    scoreEl.textContent = `Очки: ${score}`;
+  }
+
+  function spawnRound() {
+    arena.innerHTML = "";
+    roundActive = true;
+    messageEl.textContent = "Лови самый большой!";
+    const odds = reactionGenerateRound();
+    const maxOdd = Math.max(...odds);
+
+    odds.forEach((odd, i) => {
+      const box = el("button", { class: "odd-box", text: odd.toFixed(2) });
+      box.style.left = `${i * 33.33 + 2}%`;
+      box.style.top = "0%";
+      box.addEventListener("click", () => {
+        if (!roundActive) return;
+        endRound(odd === maxOdd ? "correct" : "wrong");
+      });
+      arena.appendChild(box);
+      requestAnimationFrame(() => {
+        box.style.transition = `top ${duration}ms linear`;
+        box.style.top = "82%";
+      });
+    });
+
+    missTimer = setTimeout(() => {
+      if (roundActive) endRound("miss");
+    }, duration + 150);
+  }
+
+  function endRound(outcome) {
+    if (missTimer) clearTimeout(missTimer);
+    roundActive = false;
+    if (outcome === "correct") {
+      score += 1;
+      duration = Math.max(900, duration - 60);
+      messageEl.textContent = "✅ Верно!";
+    } else if (outcome === "wrong") {
+      lives -= 1;
+      messageEl.textContent = "❌ Не тот коэффициент.";
+    } else {
+      lives -= 1;
+      messageEl.textContent = "⌛ Не успел.";
+    }
+    updateHud();
+    arena.innerHTML = "";
+    if (lives <= 0) {
+      gameOver();
+      return;
+    }
+    nextRoundTimer = setTimeout(spawnRound, 500);
+  }
+
+  function gameOver() {
+    playArea.style.display = "none";
+    const earned = score * 10;
+    if (earned > 0) casinoSetBalance(casinoGetBalance() + earned);
+    overArea.innerHTML = "";
+    overArea.style.display = "";
+    overArea.appendChild(
+      el("div", {
+        class: "card",
+        html: `<div class="card-title">Игра окончена</div><div class="card-sub">Поймано верно: ${score} · Начислено: +${earned} 🪙</div>`,
+      })
+    );
+    overArea.appendChild(el("button", { class: "btn", text: "🔄 Играть снова", onclick: restart }));
+  }
+
+  function restart() {
+    lives = 3;
+    score = 0;
+    duration = 2200;
+    updateHud();
+    overArea.style.display = "none";
+    playArea.style.display = "";
+    nextRoundTimer = setTimeout(spawnRound, 400);
+  }
+
+  onCleanup(() => {
+    if (missTimer) clearTimeout(missTimer);
+    if (nextRoundTimer) clearTimeout(nextRoundTimer);
+    roundActive = false;
+  });
+
+  updateHud();
+  nextRoundTimer = setTimeout(spawnRound, 600);
+
   return wrap;
 }
 
