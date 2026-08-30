@@ -87,6 +87,9 @@ function render() {
     comparePick2: renderComparePick2,
     compareResult: renderCompareResult,
     news: renderNews,
+    casino: renderCasino,
+    slots: renderSlots,
+    roulette: renderRoulette,
   };
 
   const renderer = screens[current.view] || renderHome;
@@ -115,6 +118,7 @@ function renderHome() {
   );
   const main = el("main");
   main.appendChild(el("button", { class: "btn", text: "🏆 Виды спорта", onclick: () => navigate("sports") }));
+  main.appendChild(el("button", { class: "btn secondary", text: "🎰 Казино (виртуальные очки)", onclick: () => navigate("casino") }));
   renderHomeNote(main);
   wrap.appendChild(main);
   return wrap;
@@ -448,6 +452,194 @@ function renderNews({ sport }) {
     card.appendChild(el("div", { class: "card-sub", text: `${item.source} · ${item.publishedAt}` }));
     main.appendChild(card);
   }
+  wrap.appendChild(main);
+  return wrap;
+}
+
+// ---- Casino ----
+
+let casinoBet = BET_STEPS[1]; // default bet, remembered between screens
+
+function betPicker(onPick) {
+  const row = el("div", { class: "grid-2" });
+  const buttons = [];
+  for (const amount of BET_STEPS) {
+    const btn = el("button", {
+      class: "tile" + (amount === casinoBet ? " tile-selected" : ""),
+      text: `${amount} 🪙`,
+      onclick: () => {
+        casinoBet = amount;
+        buttons.forEach((b) => b.classList.toggle("tile-selected", Number(b.dataset.amount) === amount));
+        if (onPick) onPick(amount);
+      },
+    });
+    btn.dataset.amount = String(amount);
+    buttons.push(btn);
+    row.appendChild(btn);
+  }
+  return row;
+}
+
+function renderCasino() {
+  const wrap = el("div");
+  wrap.appendChild(topbar("🎰 Казино"));
+  const main = el("main");
+  main.appendChild(
+    el("div", {
+      class: "card",
+      html: `<div class="card-title">Баланс: ${casinoGetBalance()} 🪙</div><div class="card-sub">Виртуальные очки, реальных денег тут нет.</div>`,
+    })
+  );
+  main.appendChild(el("button", { class: "btn", text: "🎰 Слоты", onclick: () => navigate("slots") }));
+  main.appendChild(el("button", { class: "btn", text: "🎡 Рулетка", onclick: () => navigate("roulette") }));
+  main.appendChild(
+    el("button", {
+      class: "btn secondary",
+      text: `+${CASINO_TOPUP_AMOUNT} 🪙 Пополнить бесплатно`,
+      onclick: () => {
+        casinoTopUp();
+        render();
+      },
+    })
+  );
+  main.appendChild(
+    el("p", { class: "subtitle", text: "Игра ради развлечения: очки виртуальные, ни на что реальное не обмениваются." })
+  );
+  wrap.appendChild(main);
+  return wrap;
+}
+
+function renderSlots() {
+  const wrap = el("div");
+  wrap.appendChild(topbar("🎰 Слоты"));
+  const main = el("main");
+
+  const balanceEl = el("div", { class: "card-title", text: `Баланс: ${casinoGetBalance()} 🪙` });
+  main.appendChild(el("div", { class: "card" }, [balanceEl]));
+
+  const reelEls = [0, 1, 2].map(() => el("div", { class: "slot-reel", text: "❔" }));
+  main.appendChild(el("div", { class: "slot-reels" }, reelEls));
+
+  const messageEl = el("div", { class: "subtitle", text: "Выбери ставку и крути барабан." });
+  main.appendChild(messageEl);
+  main.appendChild(betPicker());
+
+  const spinBtn = el("button", { class: "btn", text: "🎲 Крутить" });
+  spinBtn.addEventListener("click", () => {
+    const balance = casinoGetBalance();
+    if (balance < casinoBet) {
+      messageEl.textContent = "Недостаточно очков — пополни баланс в казино.";
+      return;
+    }
+    spinBtn.disabled = true;
+    casinoSetBalance(balance - casinoBet);
+    balanceEl.textContent = `Баланс: ${casinoGetBalance()} 🪙`;
+
+    const result = slotSpin();
+    let step = 0;
+    const spinInterval = setInterval(() => {
+      reelEls.forEach((r) => (r.textContent = slotSpinReel()));
+      step += 1;
+      if (step >= 8) {
+        clearInterval(spinInterval);
+        reelEls.forEach((r, i) => (r.textContent = result.reels[i]));
+        if (result.winMultiplier > 0) {
+          const winAmount = Math.round(casinoBet * result.winMultiplier);
+          casinoSetBalance(casinoGetBalance() + winAmount);
+          messageEl.textContent = `${result.message} Выигрыш: +${winAmount} 🪙`;
+        } else {
+          messageEl.textContent = result.message;
+        }
+        balanceEl.textContent = `Баланс: ${casinoGetBalance()} 🪙`;
+        spinBtn.disabled = false;
+      }
+    }, 80);
+  });
+  main.appendChild(spinBtn);
+
+  wrap.appendChild(main);
+  return wrap;
+}
+
+function renderRoulette() {
+  const wrap = el("div");
+  wrap.appendChild(topbar("🎡 Рулетка"));
+  const main = el("main");
+
+  const balanceEl = el("div", { class: "card-title", text: `Баланс: ${casinoGetBalance()} 🪙` });
+  main.appendChild(el("div", { class: "card" }, [balanceEl]));
+
+  const wheelEl = el("div", { class: "roulette-number", text: "?" });
+  main.appendChild(wheelEl);
+
+  const messageEl = el("div", { class: "subtitle", text: "Выбери ставку, цвет и крути колесо." });
+  main.appendChild(messageEl);
+  main.appendChild(betPicker());
+
+  let selectedColor = "red";
+  const colorButtons = {};
+  const colorRow = el("div", { class: "grid-2" });
+  for (const [color, label] of [
+    ["red", "🔴 Красное · x2"],
+    ["black", "⚫ Чёрное · x2"],
+  ]) {
+    const btn = el("button", {
+      class: "tile" + (color === selectedColor ? " tile-selected" : ""),
+      text: label,
+      onclick: () => {
+        selectedColor = color;
+        Object.entries(colorButtons).forEach(([c, b]) => b.classList.toggle("tile-selected", c === color));
+      },
+    });
+    colorButtons[color] = btn;
+    colorRow.appendChild(btn);
+  }
+  main.appendChild(colorRow);
+  main.appendChild(
+    el("button", {
+      class: "tile",
+      text: "🟢 Зелёное (0) · x14",
+      onclick: () => {
+        selectedColor = "green";
+        Object.values(colorButtons).forEach((b) => b.classList.remove("tile-selected"));
+      },
+    })
+  );
+
+  const spinBtn = el("button", { class: "btn", text: "🎡 Крутить" });
+  spinBtn.addEventListener("click", () => {
+    const balance = casinoGetBalance();
+    if (balance < casinoBet) {
+      messageEl.textContent = "Недостаточно очков — пополни баланс в казино.";
+      return;
+    }
+    spinBtn.disabled = true;
+    casinoSetBalance(balance - casinoBet);
+    balanceEl.textContent = `Баланс: ${casinoGetBalance()} 🪙`;
+
+    const result = rouletteSpin(selectedColor);
+    let step = 0;
+    const spinInterval = setInterval(() => {
+      wheelEl.textContent = String(ROULETTE_WHEEL_ORDER[Math.floor(Math.random() * ROULETTE_WHEEL_ORDER.length)]);
+      step += 1;
+      if (step >= 10) {
+        clearInterval(spinInterval);
+        wheelEl.textContent = String(result.number);
+        wheelEl.className = `roulette-number roulette-${result.color}`;
+        if (result.winMultiplier > 0) {
+          const winAmount = Math.round(casinoBet * result.winMultiplier);
+          casinoSetBalance(casinoGetBalance() + winAmount);
+          messageEl.textContent = `Выпало ${result.number} (${result.color}). Выигрыш: +${winAmount} 🪙`;
+        } else {
+          messageEl.textContent = `Выпало ${result.number} (${result.color}). Не повезло.`;
+        }
+        balanceEl.textContent = `Баланс: ${casinoGetBalance()} 🪙`;
+        spinBtn.disabled = false;
+      }
+    }, 80);
+  });
+  main.appendChild(spinBtn);
+
   wrap.appendChild(main);
   return wrap;
 }

@@ -269,3 +269,51 @@ table.odds-table td:first-child {
   text-align: center;
   padding: 40px 20px;
 }
+
+.tile-selected {
+  outline: 2px solid var(--tg-button);
+}
+
+.slot-reels {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 14px 0;
+}
+
+.slot-reel {
+  flex: 1;
+  background: var(--tg-secondary-bg);
+  border-radius: 14px;
+  font-size: 40px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.roulette-number {
+  width: 72px;
+  height: 72px;
+  margin: 14px auto;
+  border-radius: 50%;
+  background: var(--tg-secondary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.roulette-red {
+  background: var(--accent-bad);
+  color: #fff;
+}
+
+.roulette-black {
+  background: #1c1c1c;
+  color: #fff;
+}
+
+.roulette-green {
+  background: var(--accent-good);
+  color: #0b1f14;
+}
