@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import MenuButtonDefault, MenuButtonWebApp, WebAppInfo
 
 from bot.config import settings
 from bot.db.engine import init_db
@@ -59,6 +60,13 @@ async def main() -> None:
     dp.include_router(subscriptions.router)
     dp.include_router(voice.router)
     dp.include_router(freeform.router)
+
+    if settings.mini_app_url:
+        await bot.set_chat_menu_button(
+            menu_button=MenuButtonWebApp(text="Открыть", web_app=WebAppInfo(url=settings.mini_app_url))
+        )
+    else:
+        await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
