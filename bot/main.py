@@ -15,6 +15,7 @@ from bot.handlers import (
     arbitrage,
     compare,
     events,
+    express,
     freeform,
     game,
     news,
@@ -49,6 +50,7 @@ async def main() -> None:
     # freeform catch-all, otherwise it would swallow every text message first.
     dp.include_router(start.router)
     dp.include_router(game.router)
+    dp.include_router(express.router)
     dp.include_router(admin_handlers.router)
     dp.include_router(sports.router)
     dp.include_router(events.router)
