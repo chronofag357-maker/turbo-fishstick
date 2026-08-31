@@ -1,8 +1,22 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, WebAppInfo
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 from bot.db.models import SportSetting
 from bot.services.adapters.base import Competitor, Event
+
+
+def quick_access_keyboard(mini_app_url: str) -> ReplyKeyboardMarkup:
+    """Persistent keyboard (stays under the text field for every message,
+    unlike the one-time native /start button) — each button opens the Mini
+    App directly, no intermediate message.
+    """
+    builder = ReplyKeyboardBuilder()
+    builder.button(text="🎯 Экспресс", web_app=WebAppInfo(url=f"{mini_app_url}?view=express"))
+    builder.button(text="📱 Mini App", web_app=WebAppInfo(url=mini_app_url))
+    builder.button(text="🥋 UFC-предматч", web_app=WebAppInfo(url=f"{mini_app_url}?view=ufc"))
+    builder.button(text="🥊 Boxing-предматч", web_app=WebAppInfo(url=f"{mini_app_url}?view=boxing"))
+    builder.adjust(2, 2)
+    return builder.as_markup(resize_keyboard=True, is_persistent=True)
 
 
 def main_menu(mini_app_url: str = "") -> InlineKeyboardMarkup:
