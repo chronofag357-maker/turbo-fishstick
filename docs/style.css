@@ -437,18 +437,40 @@ table.odds-table td:first-child {
 
 .odd-box {
   position: absolute;
-  width: 29%;
-  padding: 10px 0;
-  border: none;
-  border-radius: 8px;
-  background: #1c2733;
+  width: 27%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #f4c542;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #1c2733 54%, transparent 55%),
+    repeating-conic-gradient(#f4c542 0deg 15deg, #10161d 15deg 30deg);
   color: var(--accent-good);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 4px #10161d;
   cursor: pointer;
   animation: odd-sway ease-in-out infinite alternate;
+}
+
+.mascot-bounce {
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 6px;
+  animation: mascot-bounce 1.6s ease-in-out infinite;
+}
+
+@keyframes mascot-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-8deg);
+  }
 }
 
 @keyframes odd-sway {
