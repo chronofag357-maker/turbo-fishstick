@@ -352,4 +352,14 @@ table.odds-table td:first-child {
   text-align: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   cursor: pointer;
+  animation: odd-sway ease-in-out infinite alternate;
+}
+
+@keyframes odd-sway {
+  from {
+    transform: translateX(calc(-1 * var(--sway, 8px)));
+  }
+  to {
+    transform: translateX(var(--sway, 8px));
+  }
 }

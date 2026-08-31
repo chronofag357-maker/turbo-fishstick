@@ -1,8 +1,10 @@
-"""Native Telegram Game card (sendGame), launching the same casino screen
-that also lives inside the Mini App. Score syncing (setGameScore /
-getGameHighScores) needs a server holding the bot token to call those
-methods on demand from the browser — out of scope without real hosting,
-so this only handles launching the game, no leaderboard.
+"""Native Telegram Game card (sendGame), launching the standalone reaction
+game ("Лови коэффициент") — a separate entry point from the casino hub,
+by design: /game opens straight into the falling-odds game, not a menu.
+Score syncing (setGameScore / getGameHighScores) needs a server holding
+the bot token to call those methods on demand from the browser — out of
+scope without real hosting, so this only handles launching the game, no
+leaderboard.
 """
 
 from aiogram import F, Router
@@ -29,4 +31,4 @@ async def open_game(callback: CallbackQuery) -> None:
             "Игра пока не настроена — владелец бота не указал MINI_APP_URL.", show_alert=True
         )
         return
-    await callback.answer(url=f"{settings.mini_app_url}?view=casino")
+    await callback.answer(url=f"{settings.mini_app_url}?view=reaction")
