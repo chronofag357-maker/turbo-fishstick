@@ -657,6 +657,48 @@ function renderRoulette() {
   return wrap;
 }
 
+// ---- Sound (synthesised, no audio files needed) ----
+
+let sharedAudioCtx = null;
+
+function getAudioContext() {
+  if (sharedAudioCtx) return sharedAudioCtx;
+  try {
+    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    sharedAudioCtx = null;
+  }
+  return sharedAudioCtx;
+}
+
+function playTone(frequency, durationMs, type) {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + durationMs / 1000);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + durationMs / 1000);
+  } catch (e) {
+    /* audio not available in this WebView — game still works silently */
+  }
+}
+
+function playCorrectSound() {
+  playTone(880, 120, "sine");
+  setTimeout(() => playTone(1318.5, 150, "sine"), 90);
+}
+
+function playWrongSound() {
+  playTone(190, 260, "sawtooth");
+}
+
 function renderReactionGame() {
   const wrap = el("div");
   wrap.appendChild(topbar("⚡ Лови коэффициент"));
@@ -687,9 +729,12 @@ function renderReactionGame() {
 
   wrap.appendChild(main);
 
+  const START_DURATION = 1700;
+  const MIN_DURATION = 750;
+
   let lives = 3;
   let score = 0;
-  let duration = 2200;
+  let duration = START_DURATION;
   let roundActive = false;
   let missTimer = null;
   let nextRoundTimer = null;
@@ -708,8 +753,13 @@ function renderReactionGame() {
 
     odds.forEach((odd, i) => {
       const box = el("button", { class: "odd-box", text: odd.toFixed(2) });
-      box.style.left = `${i * 33.33 + 2}%`;
+      // Random offset inside its lane, plus a side-to-side sway while
+      // falling, so the three boxes don't just drop in straight lines.
+      const laneJitter = Math.random() * 6 - 3;
+      box.style.left = `${i * 33.33 + 2 + laneJitter}%`;
       box.style.top = "0%";
+      box.style.setProperty("--sway", `${6 + Math.random() * 10}px`);
+      box.style.animationDuration = `${0.35 + Math.random() * 0.35}s`;
       box.addEventListener("click", () => {
         if (!roundActive) return;
         endRound(odd === maxOdd ? "correct" : "wrong");
@@ -731,14 +781,17 @@ function renderReactionGame() {
     roundActive = false;
     if (outcome === "correct") {
       score += 1;
-      duration = Math.max(900, duration - 60);
+      duration = Math.max(MIN_DURATION, duration - 70);
       messageEl.textContent = "✅ Верно!";
+      playCorrectSound();
     } else if (outcome === "wrong") {
       lives -= 1;
       messageEl.textContent = "❌ Не тот коэффициент.";
+      playWrongSound();
     } else {
       lives -= 1;
       messageEl.textContent = "⌛ Не успел.";
+      playWrongSound();
     }
     updateHud();
     arena.innerHTML = "";
@@ -767,7 +820,7 @@ function renderReactionGame() {
   function restart() {
     lives = 3;
     score = 0;
-    duration = 2200;
+    duration = START_DURATION;
     updateHud();
     overArea.style.display = "none";
     playArea.style.display = "";
@@ -814,9 +867,11 @@ if (tg) {
 }
 
 // Opened via the bot's native Game card (sendGame -> answerCallbackQuery
-// url=...?view=casino) jumps straight to the casino instead of home, and
-// the express-bet buttons (?view=ufc/boxing/express) open their own
-// (currently placeholder) screens the same way.
+// url=...?view=reaction) jumps straight into the standalone reaction game
+// (not the casino hub — a deliberately separate entry point), the casino
+// button opens the casino hub (?view=casino), and the express-bet buttons
+// (?view=ufc/boxing/express) open their own (currently placeholder)
+// screens the same way.
 const PLACEHOLDER_TITLES = {
   ufc: "🥋 UFC — предматч",
   boxing: "🥊 Boxing — предматч",
@@ -825,6 +880,8 @@ const PLACEHOLDER_TITLES = {
 const startView = new URLSearchParams(window.location.search).get("view");
 if (startView === "casino") {
   navigate("casino");
+} else if (startView === "reaction") {
+  navigate("reactionGame");
 } else if (startView in PLACEHOLDER_TITLES) {
   navigate("placeholder", { title: PLACEHOLDER_TITLES[startView] });
 } else {
