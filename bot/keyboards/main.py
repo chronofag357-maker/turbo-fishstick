@@ -8,10 +8,21 @@ from bot.services.adapters.base import Competitor, Event
 def main_menu(mini_app_url: str = "") -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text="🏆 Виды спорта", callback_data="sports")
+    builder.button(text="🎯 Экспресс", callback_data="express")
     builder.button(text="🔔 Мои подписки", callback_data="my_subs")
     if mini_app_url:
         builder.button(text="📱 Открыть Mini App", web_app=WebAppInfo(url=mini_app_url))
     builder.adjust(1)
+    return builder.as_markup()
+
+
+def express_tabs_keyboard(mini_app_url: str) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="🥋 UFC-предматч", web_app=WebAppInfo(url=f"{mini_app_url}?view=ufc"))
+    builder.button(text="🥊 Boxing-предматч", web_app=WebAppInfo(url=f"{mini_app_url}?view=boxing"))
+    builder.button(text="🧮 Экспресс-10 ед.", web_app=WebAppInfo(url=f"{mini_app_url}?view=express"))
+    builder.button(text="⬅️ В меню", callback_data="home")
+    builder.adjust(2, 1, 1)
     return builder.as_markup()
 
 

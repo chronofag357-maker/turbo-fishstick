@@ -101,6 +101,7 @@ function render() {
     slots: renderSlots,
     roulette: renderRoulette,
     reactionGame: renderReactionGame,
+    placeholder: renderPlaceholder,
   };
 
   const renderer = screens[current.view] || renderHome;
@@ -785,6 +786,23 @@ function renderReactionGame() {
   return wrap;
 }
 
+// ---- Placeholder (sections opened from the bot's express-bet buttons,
+// content still to come) ----
+
+function renderPlaceholder({ title }) {
+  const wrap = el("div");
+  wrap.appendChild(topbar(title, false));
+  const main = el("main");
+  main.appendChild(
+    el("div", {
+      class: "card",
+      html: '<div class="card-title">🚧 Скоро здесь появится контент</div><div class="card-sub">Этот раздел ещё в разработке.</div>',
+    })
+  );
+  wrap.appendChild(main);
+  return wrap;
+}
+
 // ---- Boot ----
 
 if (tg) {
@@ -796,10 +814,19 @@ if (tg) {
 }
 
 // Opened via the bot's native Game card (sendGame -> answerCallbackQuery
-// url=...?view=casino) jumps straight to the casino instead of home.
+// url=...?view=casino) jumps straight to the casino instead of home, and
+// the express-bet buttons (?view=ufc/boxing/express) open their own
+// (currently placeholder) screens the same way.
+const PLACEHOLDER_TITLES = {
+  ufc: "🥋 UFC — предматч",
+  boxing: "🥊 Boxing — предматч",
+  express: "🧮 Экспресс (до 10 событий)",
+};
 const startView = new URLSearchParams(window.location.search).get("view");
 if (startView === "casino") {
   navigate("casino");
+} else if (startView in PLACEHOLDER_TITLES) {
+  navigate("placeholder", { title: PLACEHOLDER_TITLES[startView] });
 } else {
   goHome();
 }
