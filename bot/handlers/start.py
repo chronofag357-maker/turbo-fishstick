@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery, Message
 
 from bot.config import settings
 from bot.db import repo
-from bot.keyboards.main import main_menu
+from bot.keyboards.main import main_menu, quick_access_keyboard
 
 router = Router(name="start")
 
@@ -24,6 +24,11 @@ async def cmd_start(message: Message) -> None:
     )
     await repo.ensure_sport_settings()
     await message.answer(WELCOME_TEXT, reply_markup=main_menu(settings.mini_app_url))
+    if settings.mini_app_url:
+        await message.answer(
+            "⌨️ Быстрый доступ (кнопки ниже всегда под рукой):",
+            reply_markup=quick_access_keyboard(settings.mini_app_url),
+        )
 
 
 @router.callback_query(F.data == "home")
