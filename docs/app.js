@@ -496,6 +496,7 @@ function renderCasino() {
   const wrap = el("div");
   wrap.appendChild(topbar("🎰 Казино"));
   const main = el("main");
+  main.appendChild(el("div", { class: "mascot-bounce", text: "🎲" }));
   main.appendChild(
     el("div", {
       class: "card",
