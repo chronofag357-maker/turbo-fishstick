@@ -522,6 +522,15 @@ function renderCasino() {
   return wrap;
 }
 
+const SLOT_SYMBOL_HEIGHT = 64;
+const SLOT_STRIP_FILLER = 16; // extra random symbols scrolled through before landing
+
+function buildSlotStrip(finalSymbol) {
+  const symbols = Array.from({ length: SLOT_STRIP_FILLER }, () => slotSpinReel());
+  symbols.push(finalSymbol);
+  return symbols;
+}
+
 function renderSlots() {
   const wrap = el("div");
   wrap.appendChild(topbar("🎰 Слоты"));
@@ -530,8 +539,9 @@ function renderSlots() {
   const balanceEl = el("div", { class: "card-title", text: `Баланс: ${casinoGetBalance()} 🪙` });
   main.appendChild(el("div", { class: "card" }, [balanceEl]));
 
-  const reelEls = [0, 1, 2].map(() => el("div", { class: "slot-reel", text: "❔" }));
-  main.appendChild(el("div", { class: "slot-reels" }, reelEls));
+  const reelEls = [0, 1, 2].map(() => el("div", { class: "slot-reel" }));
+  const reelsRow = el("div", { class: "slot-reels" }, reelEls);
+  main.appendChild(reelsRow);
 
   const messageEl = el("div", { class: "subtitle", text: "Выбери ставку и крути барабан." });
   main.appendChild(messageEl);
@@ -547,31 +557,63 @@ function renderSlots() {
     spinBtn.disabled = true;
     casinoSetBalance(balance - casinoBet);
     balanceEl.textContent = `Баланс: ${casinoGetBalance()} 🪙`;
+    messageEl.textContent = "Крутим...";
 
     const result = slotSpin();
-    let step = 0;
-    const spinInterval = setInterval(() => {
-      reelEls.forEach((r) => (r.textContent = slotSpinReel()));
-      step += 1;
-      if (step >= 8) {
-        clearInterval(spinInterval);
-        reelEls.forEach((r, i) => (r.textContent = result.reels[i]));
+    let settled = 0;
+
+    reelEls.forEach((reelEl, i) => {
+      reelEl.innerHTML = "";
+      const symbols = buildSlotStrip(result.reels[i]);
+      const strip = el(
+        "div",
+        { class: "slot-reel-strip" },
+        symbols.map((s) => el("div", { class: "slot-reel-symbol", text: s }))
+      );
+      reelEl.appendChild(strip);
+      const finalOffset = (symbols.length - 1) * SLOT_SYMBOL_HEIGHT;
+      const duration = 900 + i * 280;
+
+      requestAnimationFrame(() => {
+        strip.style.transition = `transform ${duration}ms cubic-bezier(0.15, 0.8, 0.15, 1)`;
+        strip.style.transform = `translateY(-${finalOffset}px)`;
+      });
+
+      strip.addEventListener("transitionend", () => {
+        settled += 1;
+        if (settled < reelEls.length) return;
+
         if (result.winMultiplier > 0) {
           const winAmount = Math.round(casinoBet * result.winMultiplier);
           casinoSetBalance(casinoGetBalance() + winAmount);
           messageEl.textContent = `${result.message} Выигрыш: +${winAmount} 🪙`;
+          floatingText(reelsRow, `+${winAmount} 🪙`, "good");
+          if (result.winMultiplier >= 8) burstConfetti(36);
         } else {
           messageEl.textContent = result.message;
         }
         balanceEl.textContent = `Баланс: ${casinoGetBalance()} 🪙`;
         spinBtn.disabled = false;
-      }
-    }, 80);
+      });
+    });
   });
   main.appendChild(spinBtn);
 
   wrap.appendChild(main);
   return wrap;
+}
+
+const ROULETTE_SEGMENT_ANGLE = 360 / ROULETTE_WHEEL_ORDER.length;
+const ROULETTE_SEGMENT_COLOR = { red: "#c0392b", black: "#1c1c1c", green: "#2ecc71" };
+
+function buildRouletteWheelGradient() {
+  const stops = ROULETTE_WHEEL_ORDER.map((number, i) => {
+    const color = ROULETTE_SEGMENT_COLOR[rouletteColorOf(number)];
+    const start = i * ROULETTE_SEGMENT_ANGLE;
+    const end = (i + 1) * ROULETTE_SEGMENT_ANGLE;
+    return `${color} ${start}deg ${end}deg`;
+  });
+  return `conic-gradient(${stops.join(", ")})`;
 }
 
 function renderRoulette() {
@@ -582,8 +624,18 @@ function renderRoulette() {
   const balanceEl = el("div", { class: "card-title", text: `Баланс: ${casinoGetBalance()} 🪙` });
   main.appendChild(el("div", { class: "card" }, [balanceEl]));
 
-  const wheelEl = el("div", { class: "roulette-number", text: "?" });
-  main.appendChild(wheelEl);
+  const wheelEl = el("div", { class: "roulette-wheel" });
+  wheelEl.style.background = buildRouletteWheelGradient();
+  const wheelWrap = el("div", { class: "roulette-wheel-wrap" }, [
+    el("div", { class: "roulette-pointer" }),
+    wheelEl,
+  ]);
+  main.appendChild(wheelWrap);
+
+  const resultBadge = el("div", { class: "roulette-result-badge", text: "?" });
+  main.appendChild(resultBadge);
+
+  let wheelRotation = 0;
 
   const messageEl = el("div", { class: "subtitle", text: "Выбери ставку, цвет и крути колесо." });
   main.appendChild(messageEl);
@@ -629,27 +681,42 @@ function renderRoulette() {
     spinBtn.disabled = true;
     casinoSetBalance(balance - casinoBet);
     balanceEl.textContent = `Баланс: ${casinoGetBalance()} 🪙`;
+    messageEl.textContent = "Крутим колесо...";
+    resultBadge.textContent = "?";
+    resultBadge.className = "roulette-result-badge";
 
     const result = rouletteSpin(selectedColor);
-    let step = 0;
-    const spinInterval = setInterval(() => {
-      wheelEl.textContent = String(ROULETTE_WHEEL_ORDER[Math.floor(Math.random() * ROULETTE_WHEEL_ORDER.length)]);
-      step += 1;
-      if (step >= 10) {
-        clearInterval(spinInterval);
-        wheelEl.textContent = String(result.number);
-        wheelEl.className = `roulette-number roulette-${result.color}`;
+
+    // Rotate the wheel so the winning segment's centre lands under the
+    // fixed pointer at the top, plus a few full spins for effect.
+    const index = ROULETTE_WHEEL_ORDER.indexOf(result.number);
+    const targetAngle = index * ROULETTE_SEGMENT_ANGLE + ROULETTE_SEGMENT_ANGLE / 2;
+    const desiredEffective = (360 - targetAngle) % 360;
+    const currentEffective = wheelRotation % 360;
+    let delta = desiredEffective - currentEffective;
+    if (delta <= 0) delta += 360;
+    wheelRotation += 5 * 360 + delta;
+    wheelEl.style.transform = `rotate(${wheelRotation}deg)`;
+
+    wheelEl.addEventListener(
+      "transitionend",
+      () => {
+        resultBadge.textContent = String(result.number);
+        resultBadge.className = `roulette-result-badge roulette-${result.color}`;
         if (result.winMultiplier > 0) {
           const winAmount = Math.round(casinoBet * result.winMultiplier);
           casinoSetBalance(casinoGetBalance() + winAmount);
           messageEl.textContent = `Выпало ${result.number} (${result.color}). Выигрыш: +${winAmount} 🪙`;
+          floatingText(resultBadge, `+${winAmount} 🪙`, "good");
+          if (result.winMultiplier >= 14) burstConfetti(36);
         } else {
           messageEl.textContent = `Выпало ${result.number} (${result.color}). Не повезло.`;
         }
         balanceEl.textContent = `Баланс: ${casinoGetBalance()} 🪙`;
         spinBtn.disabled = false;
-      }
-    }, 80);
+      },
+      { once: true }
+    );
   });
   main.appendChild(spinBtn);
 
@@ -784,6 +851,7 @@ function renderReactionGame() {
       duration = Math.max(MIN_DURATION, duration - 70);
       messageEl.textContent = "✅ Верно!";
       playCorrectSound();
+      if (score % 3 === 0) burstConfetti(16);
     } else if (outcome === "wrong") {
       lives -= 1;
       messageEl.textContent = "❌ Не тот коэффициент.";

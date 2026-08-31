@@ -279,43 +279,137 @@ table.odds-table td:first-child {
   gap: 10px;
   justify-content: center;
   margin: 14px 0;
+  background: #10161d;
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .slot-reel {
   flex: 1;
+  height: 64px;
   background: var(--tg-secondary-bg);
-  border-radius: 14px;
-  font-size: 40px;
-  text-align: center;
-  padding: 20px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
 }
 
-.roulette-number {
-  width: 72px;
-  height: 72px;
-  margin: 14px auto;
-  border-radius: 50%;
-  background: var(--tg-secondary-bg);
+.slot-reel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 70%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  pointer-events: none;
+}
+
+.slot-reel-strip {
+  display: flex;
+  flex-direction: column;
+}
+
+.slot-reel-symbol {
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 32px;
+}
+
+.roulette-wheel-wrap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin: 18px auto 8px;
+}
+
+.roulette-wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid #10161d;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 3.2s cubic-bezier(0.15, 0.8, 0.1, 1);
+}
+
+.roulette-pointer {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 16px solid var(--tg-text);
+  z-index: 2;
+}
+
+.roulette-result-badge {
+  width: 64px;
+  height: 64px;
+  margin: 4px auto 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
   font-weight: 700;
+  color: #fff;
 }
 
-.roulette-red {
+.roulette-result-badge.roulette-red {
   background: var(--accent-bad);
-  color: #fff;
 }
 
-.roulette-black {
+.roulette-result-badge.roulette-black {
   background: #1c1c1c;
-  color: #fff;
 }
 
-.roulette-green {
+.roulette-result-badge.roulette-green {
   background: var(--accent-good);
   color: #0b1f14;
+}
+
+.fx-confetti-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.fx-float {
+  position: fixed;
+  transform: translate(-50%, 0);
+  font-size: 20px;
+  font-weight: 800;
+  pointer-events: none;
+  z-index: 1001;
+  animation: fx-float-up 1s ease-out forwards;
+}
+
+.fx-float-good {
+  color: var(--accent-good);
+}
+
+.fx-float-bad {
+  color: var(--accent-bad);
+}
+
+@keyframes fx-float-up {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50px);
+  }
 }
 
 .reaction-hud {
