@@ -20,7 +20,7 @@ body {
   padding: 0;
   background: var(--tg-bg);
   color: var(--tg-text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 15px;
 }
 
@@ -454,6 +454,69 @@ table.odds-table td:first-child {
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 4px #10161d;
   cursor: pointer;
   animation: odd-sway ease-in-out infinite alternate;
+}
+
+.sport-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sport-tile {
+  border: none;
+  border-radius: 18px;
+  padding: 28px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.sport-tile svg {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.sport-tile-label {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.sport-tile-ufc {
+  background: linear-gradient(135deg, #c0392b, #7d1f16);
+}
+
+.sport-tile-mma {
+  background: linear-gradient(135deg, #6a3de8, #3a1f8a);
+}
+
+.sport-tile-boxing {
+  background: linear-gradient(135deg, #e0a72b, #8a5a10);
+}
+
+.express-example-card {
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  background: var(--tg-secondary-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.express-example-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.express-example-odd {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-good);
 }
 
 .mascot-bounce {
