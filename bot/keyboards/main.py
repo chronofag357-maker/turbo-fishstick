@@ -23,6 +23,7 @@ def main_menu(mini_app_url: str = "") -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text="🏆 Виды спорта", callback_data="sports")
     builder.button(text="🎯 Экспресс", callback_data="express")
+    builder.button(text="🎁 Получить бесплатные экспрессы", callback_data="contact_human")
     builder.button(text="🔔 Мои подписки", callback_data="my_subs")
     if mini_app_url:
         builder.button(text="📱 Открыть Mini App", web_app=WebAppInfo(url=mini_app_url))
