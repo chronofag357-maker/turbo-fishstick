@@ -14,6 +14,7 @@ from bot.handlers import (
     analysis,
     arbitrage,
     compare,
+    contact,
     events,
     express,
     freeform,
@@ -51,6 +52,7 @@ async def main() -> None:
     dp.include_router(start.router)
     dp.include_router(game.router)
     dp.include_router(express.router)
+    dp.include_router(contact.router)
     dp.include_router(admin_handlers.router)
     dp.include_router(sports.router)
     dp.include_router(events.router)

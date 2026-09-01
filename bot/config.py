@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./bot.db"
     mini_app_url: str = ""
     deepseek_api_key: str = ""
+    contact_username: str = ""
 
     @property
     def admin_id_set(self) -> set[int]:
