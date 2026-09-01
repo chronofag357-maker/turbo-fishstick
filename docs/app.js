@@ -102,6 +102,8 @@ function render() {
     roulette: renderRoulette,
     reactionGame: renderReactionGame,
     placeholder: renderPlaceholder,
+    sportTiles: renderSportTiles,
+    freeExpress: renderFreeExpress,
   };
 
   const renderer = screens[current.view] || renderHome;
@@ -908,6 +910,65 @@ function renderReactionGame() {
   return wrap;
 }
 
+// ---- Sport tiles ("MMAboxing" main-menu button) ----
+
+const SPORT_TILE_ICONS = {
+  ufc: '<svg viewBox="0 0 24 24" fill="none"><path d="M8 2H16L22 8V16L16 22H8L2 16V8L8 2Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  mma: '<svg viewBox="0 0 24 24" fill="none"><path d="M6 10V7a2 2 0 1 1 4 0v3M10 10V6a2 2 0 1 1 4 0v4M14 10V7a2 2 0 1 1 4 0v5M18 12v3a5 5 0 0 1-5 5H9a5 5 0 0 1-5-4l-1-4a1.5 1.5 0 0 1 3-1l.5 2" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  boxing:
+    '<svg viewBox="0 0 24 24" fill="none"><path d="M7 3C5 3 3.5 4.5 3.5 6.5V12C3.5 15 5.5 17 8 17H9V21H16V13.5C16 13.5 17.5 13 17.5 10.5V7C17.5 5 16 3.5 14 3.5C13 3.5 12.2 3.9 11.6 4.5C11 3.9 10.2 3.5 9.2 3.5C8.5 3.5 7.8 3.7 7 3Z" fill="#fff"/></svg>',
+};
+
+function renderSportTiles() {
+  const wrap = el("div");
+  wrap.appendChild(topbar("🥋 MMAboxing", false));
+  const main = el("main");
+  const tiles = [
+    { key: "ufc", label: "UFC", cls: "sport-tile-ufc" },
+    { key: "mma", label: "MMA", cls: "sport-tile-mma" },
+    { key: "boxing", label: "БОКС", cls: "sport-tile-boxing" },
+  ];
+  const list = el("div", { class: "sport-tiles" });
+  for (const tile of tiles) {
+    list.appendChild(
+      el("button", { class: `sport-tile ${tile.cls}`, html: SPORT_TILE_ICONS[tile.key] + `<span class="sport-tile-label">${tile.label}</span>` })
+    );
+  }
+  main.appendChild(list);
+  main.appendChild(
+    el("p", { class: "subtitle", text: "Раздел в разработке — скоро здесь появятся события, статистика и коэффициенты по каждому виду." })
+  );
+  wrap.appendChild(main);
+  return wrap;
+}
+
+// ---- Free express example screen ----
+
+function renderFreeExpress() {
+  const wrap = el("div");
+  wrap.appendChild(topbar("🎁 Бесплатный экспресс", false));
+  const main = el("main");
+  main.appendChild(
+    el("p", { class: "subtitle", text: "Пример того, как будет выглядеть бесплатный экспресс (демо, без реальных событий)." })
+  );
+
+  const examples = [
+    { title: "Одиночная ставка", sub: "1 событие", odd: "@2.10" },
+    { title: "Экспресс из 2 событий", sub: "футбол + баскетбол", odd: "@4.85" },
+    { title: "Экспресс из 3 событий", sub: "футбол + теннис + хоккей", odd: "@12.30" },
+  ];
+  for (const ex of examples) {
+    const card = el("div", { class: "express-example-card" });
+    card.appendChild(el("div", { class: "express-example-title", text: ex.title }));
+    card.appendChild(el("div", { class: "card-sub", text: ex.sub }));
+    card.appendChild(el("div", { class: "express-example-odd", text: ex.odd }));
+    main.appendChild(card);
+  }
+  main.appendChild(el("p", { class: "subtitle", text: "🚧 Раздел в разработке — скоро здесь будут реальные подборки." }));
+  wrap.appendChild(main);
+  return wrap;
+}
+
 // ---- Placeholder (sections opened from the bot's express-bet buttons,
 // content still to come) ----
 
@@ -951,6 +1012,10 @@ if (startView === "casino") {
   navigate("casino");
 } else if (startView === "reaction") {
   navigate("reactionGame");
+} else if (startView === "sportstiles") {
+  navigate("sportTiles");
+} else if (startView === "freeexpress") {
+  navigate("freeExpress");
 } else if (startView in PLACEHOLDER_TITLES) {
   navigate("placeholder", { title: PLACEHOLDER_TITLES[startView] });
 } else {

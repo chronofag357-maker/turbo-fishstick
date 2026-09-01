@@ -20,13 +20,24 @@ def quick_access_keyboard(mini_app_url: str) -> ReplyKeyboardMarkup:
 
 
 def main_menu(mini_app_url: str = "") -> InlineKeyboardMarkup:
+    """Trimmed down to exactly three entry points, per request: the contact
+    hook, the Mini App itself, and the MMA/Boxing tiles screen. The old
+    per-sport menu (events/stats/compare/news/profiles for all 6 sports)
+    still exists in handlers/sports.py etc., just isn't linked from here
+    any more.
+    """
     builder = InlineKeyboardBuilder()
-    builder.button(text="🏆 Виды спорта", callback_data="sports")
-    builder.button(text="🎯 Экспресс", callback_data="express")
     builder.button(text="🎁 Получить бесплатные экспрессы", callback_data="contact_human")
-    builder.button(text="🔔 Мои подписки", callback_data="my_subs")
     if mini_app_url:
         builder.button(text="📱 Открыть Mini App", web_app=WebAppInfo(url=mini_app_url))
+        builder.button(text="🥋 MMAboxing", web_app=WebAppInfo(url=f"{mini_app_url}?view=sportstiles"))
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def free_express_keyboard(mini_app_url: str) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="🎁 Смотреть пример", web_app=WebAppInfo(url=f"{mini_app_url}?view=freeexpress"))
     builder.adjust(1)
     return builder.as_markup()
 
