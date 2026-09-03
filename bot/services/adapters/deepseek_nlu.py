@@ -8,10 +8,13 @@ from services/analytics.py via the bot's own commands, never from here.
 """
 
 import asyncio
+import logging
 
 import aiohttp
 
 from bot.services.adapters.base import NLUAdapter
+
+logger = logging.getLogger(__name__)
 
 DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
 REQUEST_TIMEOUT_SECONDS = 20
@@ -57,9 +60,12 @@ class DeepSeekNLUAdapter(NLUAdapter):
                     timeout=aiohttp.ClientTimeout(total=REQUEST_TIMEOUT_SECONDS),
                 ) as response:
                     if response.status != 200:
+                        body = (await response.text())[:500]
+                        logger.warning("DeepSeek API: HTTP %s — %s", response.status, body)
                         return "Не удалось получить ответ от LLM (ошибка API). Попробуйте позже."
                     data = await response.json()
-        except (aiohttp.ClientError, asyncio.TimeoutError):
+        except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+            logger.warning("DeepSeek API недоступен: %s", exc)
             return "Не удалось связаться с LLM. Попробуйте позже."
 
         try:
