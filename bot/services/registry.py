@@ -35,4 +35,8 @@ sports_data = (
 odds_data = MockOddsAdapter()
 news_data = MockNewsAdapter()
 speech_to_text = MockSpeechToTextAdapter()
-nlu = DeepSeekNLUAdapter(settings.deepseek_api_key) if settings.deepseek_api_key else MockNLUAdapter()
+nlu = (
+    DeepSeekNLUAdapter(settings.deepseek_api_key, proxy_url=settings.proxy_url)
+    if settings.deepseek_api_key
+    else MockNLUAdapter()
+)

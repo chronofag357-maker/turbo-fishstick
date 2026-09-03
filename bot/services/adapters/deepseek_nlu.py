@@ -27,9 +27,10 @@ SYSTEM_PROMPT = (
 
 
 class DeepSeekNLUAdapter(NLUAdapter):
-    def __init__(self, api_key: str, model: str = "deepseek-chat") -> None:
+    def __init__(self, api_key: str, model: str = "deepseek-chat", proxy_url: str = "") -> None:
         self._api_key = api_key
         self._model = model
+        self._proxy_url = proxy_url or None
 
     async def answer(self, question: str) -> str:
         headers = {
@@ -52,6 +53,7 @@ class DeepSeekNLUAdapter(NLUAdapter):
                     DEEPSEEK_API_URL,
                     json=payload,
                     headers=headers,
+                    proxy=self._proxy_url,
                     timeout=aiohttp.ClientTimeout(total=REQUEST_TIMEOUT_SECONDS),
                 ) as response:
                     if response.status != 200:
