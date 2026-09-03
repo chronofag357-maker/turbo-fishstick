@@ -30,6 +30,7 @@ from bot.handlers import (
 )
 from bot.handlers import admin as admin_handlers
 from bot.middlewares.access import BlockedUserMiddleware
+from bot.web.api import run_api_server
 
 
 async def main() -> None:
@@ -75,6 +76,7 @@ async def main() -> None:
         await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
 
     await bot.delete_webhook(drop_pending_updates=True)
+    await run_api_server(settings.mini_app_api_port)
     await dp.start_polling(bot)
 
 

@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     mini_app_url: str = ""
     deepseek_api_key: str = ""
     contact_username: str = ""
+    boxing_data_api_key: str = ""
+    mini_app_api_port: int = 8080
 
     @property
     def admin_id_set(self) -> set[int]:

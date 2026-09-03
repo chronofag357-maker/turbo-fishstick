@@ -216,6 +216,15 @@ function renderEvents({ sport }) {
     );
   }
   wrap.appendChild(main);
+
+  // Fire-and-forget: swap in the bot's real schedule for this sport if it's
+  // configured and reachable, then re-render this same screen if we're still
+  // on it by the time the fetch resolves.
+  refreshLiveEvents(sport).then((changed) => {
+    const top = stack[stack.length - 1];
+    if (changed && top && top.view === "events" && top.params.sport === sport) render();
+  });
+
   return wrap;
 }
 
@@ -246,7 +255,6 @@ function renderAnalysis({ eventId }) {
   const hasDraw = HAS_DRAW.has(event.sport);
   const homeRating = ratingOf(event.sport, event.home);
   const awayRating = ratingOf(event.sport, event.away);
-  const probs = calculateProbabilities(homeRating, awayRating, hasDraw);
 
   const wrap = el("div");
   wrap.appendChild(topbar("Анализ и вероятности"));
@@ -255,6 +263,18 @@ function renderAnalysis({ eventId }) {
     el("div", { class: "card", html: `<div class="card-title">${event.home} — ${event.away}</div><div class="card-sub">${event.league}</div>` })
   );
 
+  if (homeRating === null || awayRating === null) {
+    main.appendChild(
+      el("div", {
+        class: "empty-hint",
+        text: "Для этого события пока нет рейтинга силы участников — анализ недоступен.",
+      })
+    );
+    wrap.appendChild(main);
+    return wrap;
+  }
+
+  const probs = calculateProbabilities(homeRating, awayRating, hasDraw);
   main.appendChild(probBar(event.home, probs.homeWin));
   if (hasDraw) main.appendChild(probBar("Ничья", probs.draw));
   main.appendChild(probBar(event.away, probs.awayWin));
@@ -291,8 +311,21 @@ function renderOdds({ eventId }) {
   wrap.appendChild(topbar("Коэффициенты"));
   const main = el("main");
   main.appendChild(
-    el("div", { class: "card", html: `<div class="card-title">${event.home} — ${event.away}</div><div class="card-sub">3 демо-букмекера</div>` })
+    el("div", {
+      class: "card",
+      html: `<div class="card-title">${event.home} — ${event.away}</div><div class="card-sub">${
+        quotes.length ? "3 демо-букмекера" : "нет источника котировок"
+      }</div>`,
+    })
   );
+
+  if (!quotes.length) {
+    main.appendChild(
+      el("div", { class: "empty-hint", text: "Коэффициенты недоступны — нет источника котировок для этого события." })
+    );
+    wrap.appendChild(main);
+    return wrap;
+  }
 
   const bestHome = Math.max(...quotes.map((q) => q.homeWin));
   const bestAway = Math.max(...quotes.map((q) => q.awayWin));
