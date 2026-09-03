@@ -23,7 +23,7 @@ _mock_sports_data = MockSportsDataAdapter()
 sports_data = (
     CompositeSportsDataAdapter(
         default=_mock_sports_data,
-        overrides={"boxing": BoxingDataApiAdapter(settings.boxing_data_api_key)},
+        overrides={"boxing": BoxingDataApiAdapter(settings.boxing_data_api_key, proxy_url=settings.proxy_url)},
     )
     if settings.boxing_data_api_key
     else _mock_sports_data

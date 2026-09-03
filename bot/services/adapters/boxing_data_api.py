@@ -29,10 +29,14 @@ _NEUTRAL_RATING = 70.0
 
 
 class BoxingDataApiAdapter(SportsDataAdapter):
-    def __init__(self, api_key: str, days: int = 5, ttl_seconds: int = 900) -> None:
+    # 5 stays safely under the free RapidAPI plan's observed ~7-day forward
+    # window for /fights/schedule — going higher just trades a clean empty
+    # result for a 403 "date out of subscription range" response.
+    def __init__(self, api_key: str, days: int = 5, ttl_seconds: int = 900, proxy_url: str = "") -> None:
         self._api_key = api_key
         self._days = days
         self._ttl_seconds = ttl_seconds
+        self._proxy_url = proxy_url or None
         self._cached_at: float = 0.0
         self._cached_events: list[Event] = []
 
@@ -48,10 +52,20 @@ class BoxingDataApiAdapter(SportsDataAdapter):
                     f"{_BASE_URL}/fights/schedule",
                     headers=headers,
                     params=params,
+                    proxy=self._proxy_url,
                     timeout=aiohttp.ClientTimeout(total=12),
                 ) as resp:
+                    if resp.status == 451:
+                        logger.warning(
+                            "Boxing Data API: регион заблокирован (HTTP 451) — нужен PROXY_URL в .env"
+                        )
+                        return self._cached_events
                     if resp.status in (401, 403):
-                        logger.warning("Boxing Data API: ключ отклонён (HTTP %s)", resp.status)
+                        logger.warning(
+                            "Boxing Data API: запрос отклонён (HTTP %s) — неверный ключ, нет подписки"
+                            " или запрошенный диапазон дат вне лимита тарифа",
+                            resp.status,
+                        )
                         return self._cached_events
                     resp.raise_for_status()
                     payload = await resp.json()
