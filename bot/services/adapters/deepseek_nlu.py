@@ -1,5 +1,8 @@
-"""Real LLM-backed answer() for function 7 (free-form questions), using
-DeepSeek's OpenAI-compatible chat completions API.
+"""Real LLM-backed answer() for function 7 (free-form questions), speaking
+the OpenAI-compatible /chat/completions dialect. DeepSeek is the default,
+but base_url/model are configurable (LLM_BASE_URL / LLM_MODEL in .env), so
+any compatible provider — OpenRouter, Groq, Together, a local model — works
+without touching this file.
 
 Per the passport's stated risk ("расчёт вероятностей не должен
 выполняться исключительно LLM"), the system prompt explicitly keeps the
@@ -17,6 +20,7 @@ from bot.services.adapters.base import NLUAdapter
 logger = logging.getLogger(__name__)
 
 DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
+DEEPSEEK_MODEL = "deepseek-chat"
 REQUEST_TIMEOUT_SECONDS = 20
 
 SYSTEM_PROMPT = (
@@ -30,10 +34,17 @@ SYSTEM_PROMPT = (
 
 
 class DeepSeekNLUAdapter(NLUAdapter):
-    def __init__(self, api_key: str, model: str = "deepseek-chat", proxy_url: str = "") -> None:
+    def __init__(
+        self,
+        api_key: str,
+        model: str = DEEPSEEK_MODEL,
+        proxy_url: str = "",
+        base_url: str = DEEPSEEK_API_URL,
+    ) -> None:
         self._api_key = api_key
         self._model = model
         self._proxy_url = proxy_url or None
+        self._base_url = base_url
 
     async def answer(self, question: str) -> str:
         headers = {
@@ -53,7 +64,7 @@ class DeepSeekNLUAdapter(NLUAdapter):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    DEEPSEEK_API_URL,
+                    self._base_url,
                     json=payload,
                     headers=headers,
                     proxy=self._proxy_url,
@@ -61,11 +72,11 @@ class DeepSeekNLUAdapter(NLUAdapter):
                 ) as response:
                     if response.status != 200:
                         body = (await response.text())[:500]
-                        logger.warning("DeepSeek API: HTTP %s — %s", response.status, body)
+                        logger.warning("LLM API (%s): HTTP %s — %s", self._base_url, response.status, body)
                         return "Не удалось получить ответ от LLM (ошибка API). Попробуйте позже."
                     data = await response.json()
         except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
-            logger.warning("DeepSeek API недоступен: %s", exc)
+            logger.warning("LLM API (%s) недоступен: %s", self._base_url, exc)
             return "Не удалось связаться с LLM. Попробуйте позже."
 
         try:

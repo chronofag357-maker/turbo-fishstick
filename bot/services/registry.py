@@ -11,7 +11,7 @@ swap it in here; handlers never import a concrete adapter directly.
 
 from bot.config import settings
 from bot.services.adapters.boxing_data_api import BoxingDataApiAdapter
-from bot.services.adapters.deepseek_nlu import DeepSeekNLUAdapter
+from bot.services.adapters.deepseek_nlu import DEEPSEEK_API_URL, DEEPSEEK_MODEL, DeepSeekNLUAdapter
 from bot.services.adapters.mock_news import MockNewsAdapter
 from bot.services.adapters.mock_nlu import MockNLUAdapter
 from bot.services.adapters.mock_odds import MockOddsAdapter
@@ -36,7 +36,12 @@ odds_data = MockOddsAdapter()
 news_data = MockNewsAdapter()
 speech_to_text = MockSpeechToTextAdapter()
 nlu = (
-    DeepSeekNLUAdapter(settings.deepseek_api_key, proxy_url=settings.proxy_url)
+    DeepSeekNLUAdapter(
+        settings.deepseek_api_key,
+        model=settings.llm_model or DEEPSEEK_MODEL,
+        proxy_url=settings.proxy_url,
+        base_url=settings.llm_base_url or DEEPSEEK_API_URL,
+    )
     if settings.deepseek_api_key
     else MockNLUAdapter()
 )
