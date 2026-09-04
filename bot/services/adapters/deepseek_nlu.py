@@ -24,7 +24,11 @@ DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
 # deepseek-v4-pro and deepseek-v4-flash-vision-exp — the old deepseek-chat
 # alias is gone. Flash is the cheap one, which is what this feature needs.
 DEEPSEEK_MODEL = "deepseek-v4-flash"
-REQUEST_TIMEOUT_SECONDS = 20
+# Free-tier models on providers like OpenRouter get queued behind everyone
+# else's free traffic — a big MoE model can easily take 30-40s to answer.
+# 20s was cutting that off mid-request, which look like a network failure
+# in the logs even though the request was still in flight.
+REQUEST_TIMEOUT_SECONDS = 55
 
 SYSTEM_PROMPT = (
     "Ты — помощник в Telegram-боте «Спортивный аналитик». Отвечай кратко и по делу "
