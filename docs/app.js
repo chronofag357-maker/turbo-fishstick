@@ -216,6 +216,15 @@ function renderEvents({ sport }) {
     );
   }
   wrap.appendChild(main);
+
+  // Fire-and-forget: swap in the bot's real schedule for this sport if it's
+  // configured and reachable, then re-render this same screen if we're still
+  // on it by the time the fetch resolves.
+  refreshLiveEvents(sport).then((changed) => {
+    const top = stack[stack.length - 1];
+    if (changed && top && top.view === "events" && top.params.sport === sport) render();
+  });
+
   return wrap;
 }
 
@@ -246,7 +255,6 @@ function renderAnalysis({ eventId }) {
   const hasDraw = HAS_DRAW.has(event.sport);
   const homeRating = ratingOf(event.sport, event.home);
   const awayRating = ratingOf(event.sport, event.away);
-  const probs = calculateProbabilities(homeRating, awayRating, hasDraw);
 
   const wrap = el("div");
   wrap.appendChild(topbar("Анализ и вероятности"));
@@ -255,6 +263,18 @@ function renderAnalysis({ eventId }) {
     el("div", { class: "card", html: `<div class="card-title">${event.home} — ${event.away}</div><div class="card-sub">${event.league}</div>` })
   );
 
+  if (homeRating === null || awayRating === null) {
+    main.appendChild(
+      el("div", {
+        class: "empty-hint",
+        text: "Для этого события пока нет рейтинга силы участников — анализ недоступен.",
+      })
+    );
+    wrap.appendChild(main);
+    return wrap;
+  }
+
+  const probs = calculateProbabilities(homeRating, awayRating, hasDraw);
   main.appendChild(probBar(event.home, probs.homeWin));
   if (hasDraw) main.appendChild(probBar("Ничья", probs.draw));
   main.appendChild(probBar(event.away, probs.awayWin));
@@ -291,8 +311,21 @@ function renderOdds({ eventId }) {
   wrap.appendChild(topbar("Коэффициенты"));
   const main = el("main");
   main.appendChild(
-    el("div", { class: "card", html: `<div class="card-title">${event.home} — ${event.away}</div><div class="card-sub">3 демо-букмекера</div>` })
+    el("div", {
+      class: "card",
+      html: `<div class="card-title">${event.home} — ${event.away}</div><div class="card-sub">${
+        quotes.length ? "3 демо-букмекера" : "нет источника котировок"
+      }</div>`,
+    })
   );
+
+  if (!quotes.length) {
+    main.appendChild(
+      el("div", { class: "empty-hint", text: "Коэффициенты недоступны — нет источника котировок для этого события." })
+    );
+    wrap.appendChild(main);
+    return wrap;
+  }
 
   const bestHome = Math.max(...quotes.map((q) => q.homeWin));
   const bestAway = Math.max(...quotes.map((q) => q.awayWin));
@@ -919,6 +952,15 @@ const SPORT_TILE_ICONS = {
     '<svg viewBox="0 0 24 24" fill="none"><path d="M7 3C5 3 3.5 4.5 3.5 6.5V12C3.5 15 5.5 17 8 17H9V21H16V13.5C16 13.5 17.5 13 17.5 10.5V7C17.5 5 16 3.5 14 3.5C13 3.5 12.2 3.9 11.6 4.5C11 3.9 10.2 3.5 9.2 3.5C8.5 3.5 7.8 3.7 7 3Z" fill="#fff"/></svg>',
 };
 
+// UFC has no mock roster of its own yet (it's a single MMA promotion, not a
+// separate sport in COMPETITORS/EVENTS) — its tile stays a placeholder while
+// MMA and boxing already have demo fighters/events/odds to show.
+const SPORT_TILE_TARGETS = {
+  mma: () => navigate("events", { sport: "mma" }),
+  boxing: () => navigate("events", { sport: "boxing" }),
+  ufc: () => navigate("placeholder", { title: PLACEHOLDER_TITLES.ufc }),
+};
+
 function renderSportTiles() {
   const wrap = el("div");
   wrap.appendChild(topbar("🥋 MMAboxing", false));
@@ -931,12 +973,16 @@ function renderSportTiles() {
   const list = el("div", { class: "sport-tiles" });
   for (const tile of tiles) {
     list.appendChild(
-      el("button", { class: `sport-tile ${tile.cls}`, html: SPORT_TILE_ICONS[tile.key] + `<span class="sport-tile-label">${tile.label}</span>` })
+      el("button", {
+        class: `sport-tile ${tile.cls}`,
+        html: SPORT_TILE_ICONS[tile.key] + `<span class="sport-tile-label">${tile.label}</span>`,
+        onclick: SPORT_TILE_TARGETS[tile.key],
+      })
     );
   }
   main.appendChild(list);
   main.appendChild(
-    el("p", { class: "subtitle", text: "Раздел в разработке — скоро здесь появятся события, статистика и коэффициенты по каждому виду." })
+    el("p", { class: "subtitle", text: "MMA и бокс — предматчевые события и коэффициенты (демо-данные). UFC — раздел в разработке." })
   );
   wrap.appendChild(main);
   return wrap;

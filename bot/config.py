@@ -9,7 +9,18 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./bot.db"
     mini_app_url: str = ""
     deepseek_api_key: str = ""
+    # Any OpenAI-compatible /chat/completions provider works here (OpenRouter,
+    # Groq, Together, a local model...) — empty means DeepSeek's own defaults.
+    llm_base_url: str = ""
+    llm_model: str = ""
     contact_username: str = ""
+    boxing_data_api_key: str = ""
+    mini_app_api_port: int = 8080
+    # HTTP(S) proxy for outbound requests (Telegram, Boxing Data API) — needed
+    # when a system-wide VPN/proxy client (e.g. V2Ray, Clash) handles your
+    # regular internet access but Python's aiohttp doesn't see it on its own.
+    # Example: http://127.0.0.1:10809
+    proxy_url: str = ""
 
     @property
     def admin_id_set(self) -> set[int]:

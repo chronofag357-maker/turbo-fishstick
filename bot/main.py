@@ -3,6 +3,7 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import MenuButtonDefault, MenuButtonWebApp, WebAppInfo
@@ -30,6 +31,7 @@ from bot.handlers import (
 )
 from bot.handlers import admin as admin_handlers
 from bot.middlewares.access import BlockedUserMiddleware
+from bot.web.api import run_api_server
 
 
 async def main() -> None:
@@ -38,9 +40,14 @@ async def main() -> None:
     await init_db()
     await ensure_sport_settings()
 
+    # aiohttp (used by both aiogram and BoxingDataApiAdapter) does not pick up
+    # a Windows system-wide proxy/VPN on its own — set PROXY_URL in .env if
+    # api.telegram.org or RapidAPI are unreachable/blocked without one.
+    session = AiohttpSession(proxy=settings.proxy_url or None) if settings.proxy_url else None
     bot = Bot(
         token=settings.bot_token,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+        session=session,
     )
     dp = Dispatcher(storage=MemoryStorage())
 
@@ -75,6 +82,7 @@ async def main() -> None:
         await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
 
     await bot.delete_webhook(drop_pending_updates=True)
+    await run_api_server(settings.mini_app_api_port)
     await dp.start_polling(bot)
 
 

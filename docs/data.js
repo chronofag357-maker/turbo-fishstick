@@ -94,9 +94,12 @@ function findEvent(eventId) {
   return null;
 }
 
+// null (not a default 70) for an unknown competitor — a real event fetched
+// live has no strength rating behind it, and analysis/odds/arbitrage should
+// say so rather than quietly compute numbers off a made-up rating.
 function ratingOf(sport, name) {
   const competitor = (COMPETITORS[sport] || []).find((c) => c.name === name);
-  return competitor ? competitor.rating : 70.0;
+  return competitor ? competitor.rating : null;
 }
 
 // Mirrors analytics.calculate_probabilities — includes home advantage.
@@ -123,6 +126,7 @@ function compareCompetitors(nameA, ratingA, nameB, ratingB) {
 function getOdds(event) {
   const homeRating = ratingOf(event.sport, event.home);
   const awayRating = ratingOf(event.sport, event.away);
+  if (homeRating === null || awayRating === null) return [];
   const hasDraw = HAS_DRAW.has(event.sport);
 
   const drawWeight = hasDraw ? 0.24 * Math.min(homeRating, awayRating) : 0.0;
@@ -191,6 +195,37 @@ function findArbitrage(quotes) {
     marginPct,
     stakeSplit,
   };
+}
+
+// Base URL of the bot's own read-only API (bot/web/api.py) — set on
+// window.MINI_APP_API_BASE in index.html once the bot is hosted somewhere
+// with a public HTTPS URL. Left empty, the app just keeps using the demo
+// data above forever, exactly like before this existed.
+const MINI_APP_API_BASE = (typeof window !== "undefined" && window.MINI_APP_API_BASE) || "";
+
+// Replaces EVENTS[sport] with the bot's real schedule for that sport, if the
+// API is configured and reachable. Silently keeps the demo data on any
+// failure (not hosted yet, network hiccup, bot down) — this is a progressive
+// enhancement, never a hard requirement to use the app.
+//
+// Returns true only when the fetched schedule actually differs from what's
+// already in EVENTS[sport] — callers re-render on a true result, so a stable
+// "false" once the data settles is what stops that from looping forever.
+async function refreshLiveEvents(sport) {
+  if (!MINI_APP_API_BASE) return false;
+  try {
+    const res = await fetch(`${MINI_APP_API_BASE}/api/events?sport=${encodeURIComponent(sport)}`, {
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return false;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || !rows.length) return false;
+    if (JSON.stringify(rows) === JSON.stringify(EVENTS[sport])) return false;
+    EVENTS[sport] = rows;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function getNews(subject) {

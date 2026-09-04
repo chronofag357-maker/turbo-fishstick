@@ -15,6 +15,14 @@
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      // Public HTTPS URL of the bot's own API (bot/web/api.py) — empty means
+      // "no live data configured yet", and the app just runs on the demo
+      // data in data.js, same as before this existed. Set this once the bot
+      // is hosted somewhere reachable over HTTPS, e.g.:
+      // window.MINI_APP_API_BASE = "https://your-bot-host.example.com";
+      window.MINI_APP_API_BASE = "";
+    </script>
     <script src="data.js"></script>
     <script src="casino.js"></script>
     <script src="effects.js"></script>
