@@ -20,7 +20,10 @@ from bot.services.adapters.base import NLUAdapter
 logger = logging.getLogger(__name__)
 
 DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
-DEEPSEEK_MODEL = "deepseek-chat"
+# Per the API reference, /chat/completions only accepts deepseek-v4-flash,
+# deepseek-v4-pro and deepseek-v4-flash-vision-exp — the old deepseek-chat
+# alias is gone. Flash is the cheap one, which is what this feature needs.
+DEEPSEEK_MODEL = "deepseek-v4-flash"
 REQUEST_TIMEOUT_SECONDS = 20
 
 SYSTEM_PROMPT = (
@@ -60,6 +63,11 @@ class DeepSeekNLUAdapter(NLUAdapter):
             "max_tokens": 500,
             "temperature": 0.6,
         }
+        # DeepSeek turns thinking mode on by default and bills the reasoning
+        # tokens; a short sports Q&A doesn't need it. Only sent to DeepSeek
+        # itself — other OpenAI-compatible providers don't know this field.
+        if self._base_url == DEEPSEEK_API_URL:
+            payload["thinking"] = {"type": "disabled"}
 
         try:
             async with aiohttp.ClientSession() as session:
