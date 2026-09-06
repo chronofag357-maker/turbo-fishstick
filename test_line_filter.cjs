@@ -1,0 +1,12 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const code=fs.readFileSync('docs/freebk.js','utf8');
+const start=code.indexOf('function eligibleBooks('),end=code.indexOf('function updateBookOptions(');
+const e={bookmakers:[{key:'a',regions:['us']},{key:'b',regions:['eu','uk']}]};
+const select=(region,book)=>vm.runInNewContext(code.slice(start,end)+'eligibleBooks(e)',{e,chosenRegion:region,chosenBook:book});
+assert.equal(select('','').length,2);
+assert.equal(select('eu','')[0].key,'b');
+assert.equal(select('uk','b')[0].key,'b');
+assert.equal(select('us','b').length,0);
+assert.equal(select('','missing').length,0);
+assert.equal(select('','a')[0].key,'a');
+console.log('Line filtering: 6 checks passed');

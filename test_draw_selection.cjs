@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const code=fs.readFileSync('docs/freebk.js','utf8');
+const selection=code.slice(code.indexOf('const fighters=[e.home_team'),code.indexOf('let total;'));
+const market=(draw)=>({key:'h2h',outcomes:[{name:'A',price:1.2},{name:'B',price:4},...(draw?[{name:'Draw',price:33}]:[])]});
+const select=bookmakers=>vm.runInNewContext(selection+'win',{e:{home_team:'A',away_team:'B',bookmakers}});
+const books=[{key:'a',markets:[market(false)]},{key:'z',markets:[market(true)]}];
+assert.equal(select(books).b.key,'z');
+assert.equal(select(books.slice(0,1)).b.key,'a');
+assert.equal(select([]),undefined);
+books[1].markets[0].key='h2h_3_way';
+assert.equal(select(books).m.key,'h2h_3_way');
+books[1].markets[0].outcomes=books[1].markets[0].outcomes.filter(o=>o.name!=='B');
+assert.equal(select(books).b.key,'a');
+console.log('Draw selection: 5 checks passed');

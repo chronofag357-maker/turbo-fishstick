@@ -32,6 +32,7 @@ from bot.handlers import (
 from bot.handlers import admin as admin_handlers
 from bot.middlewares.access import BlockedUserMiddleware
 from bot.web.api import run_api_server
+from bot.keyboards.main import freebk_url
 
 
 async def main() -> None:
@@ -76,14 +77,18 @@ async def main() -> None:
 
     if settings.mini_app_url:
         await bot.set_chat_menu_button(
-            menu_button=MenuButtonWebApp(text="Открыть", web_app=WebAppInfo(url=settings.mini_app_url))
+            menu_button=MenuButtonWebApp(text="FreeBK", web_app=WebAppInfo(url=freebk_url(settings.mini_app_url)))
         )
     else:
         await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
 
-    await bot.delete_webhook(drop_pending_updates=True)
-    await run_api_server(settings.mini_app_api_port)
-    await dp.start_polling(bot)
+    await bot.delete_webhook(drop_pending_updates=False)
+    runner = await run_api_server(settings.mini_app_api_port)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await runner.cleanup()
+        await bot.session.close()
 
 
 if __name__ == "__main__":

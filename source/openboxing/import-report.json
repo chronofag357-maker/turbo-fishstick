@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-09-06T12:52:39.565422+00:00",
+  "datasets": {
+    "bouts/scheduled.json": {
+      "url": "https://openboxing.org/api/bouts/scheduled.json",
+      "error": "HTTPError"
+    },
+    "bouts/all.json": {
+      "url": "https://openboxing.org/api/bouts/all.json",
+      "error": "HTTPError"
+    },
+    "champions/all.json": {
+      "url": "https://openboxing.org/api/champions/all.json",
+      "error": "HTTPError"
+    },
+    "reigns/all.json": {
+      "url": "https://openboxing.org/api/reigns/all.json",
+      "error": "HTTPError"
+    }
+  }
+}

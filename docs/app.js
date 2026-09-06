@@ -103,6 +103,7 @@ function render() {
     reactionGame: renderReactionGame,
     placeholder: renderPlaceholder,
     sportTiles: renderSportTiles,
+    boxingBoard: renderBoxingBoard,
     freeExpress: renderFreeExpress,
   };
 
@@ -957,7 +958,7 @@ const SPORT_TILE_ICONS = {
 // MMA and boxing already have demo fighters/events/odds to show.
 const SPORT_TILE_TARGETS = {
   mma: () => navigate("events", { sport: "mma" }),
-  boxing: () => navigate("events", { sport: "boxing" }),
+  boxing: () => navigate("boxingBoard"),
   ufc: () => navigate("placeholder", { title: PLACEHOLDER_TITLES.ufc }),
 };
 
@@ -985,6 +986,70 @@ function renderSportTiles() {
     el("p", { class: "subtitle", text: "MMA и бокс — предматчевые события и коэффициенты (демо-данные). UFC — раздел в разработке." })
   );
   wrap.appendChild(main);
+  return wrap;
+}
+
+// ---- Boxing prematch board ----
+
+function formatFightTime(value) {
+  if (!value) return "Время уточняется";
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if (!match) return String(value);
+  return `${match[3]}.${match[2]}.${match[1]} · ${match[4]}:${match[5]}`;
+}
+
+function boxingEventCard(event) {
+  const card = el("button", {
+    class: "prematch-card",
+    onclick: () => navigate("eventDetail", { eventId: event.id }),
+  });
+  const meta = el("div", { class: "prematch-meta" }, [
+    el("span", { text: event.league || "Бокс" }),
+    el("span", { text: formatFightTime(event.time) }),
+  ]);
+  const fighters = el("div", { class: "prematch-fighters" }, [
+    el("span", { text: event.home }),
+    el("span", { class: "prematch-versus", text: "VS" }),
+    el("span", { text: event.away }),
+  ]);
+  card.append(meta, fighters, el("span", { class: "prematch-action", text: "Открыть событие  ›" }));
+  return card;
+}
+
+function renderBoxingBoard() {
+  const wrap = el("div", { class: "prematch-app" });
+  const header = el("header", { class: "prematch-header" }, [
+    el("div", { class: "prematch-brand", text: "ANALYTICS" }),
+    el("div", { class: "prematch-live", text: "ПРЕДМАТЧ · БОКС" }),
+  ]);
+  wrap.appendChild(header);
+  const main = el("main", { class: "prematch-main" });
+  main.appendChild(el("div", { class: "prematch-title", text: "Ближайшие бои" }));
+  main.appendChild(
+    el("div", {
+      class: "prematch-note",
+      text: "Бокс · ближайшие 5 дней. Коэффициенты для этих боёв пока недоступны.",
+    })
+  );
+
+  const events = EVENTS.boxing || [];
+  main.appendChild(el("p", { class: "prematch-note", role: "status", text: LIVE_STATE.boxing?.message || "Загружаем расписание…" }));
+  main.appendChild(el("button", { class: "prematch-back", text: "Обновить расписание", onclick: async () => {
+    await refreshLiveEvents("boxing", true);
+    if (stack[stack.length - 1]?.view === "boxingBoard") render();
+  } }));
+  if (!events.length) {
+    main.appendChild(el("div", { class: "prematch-empty", text: "Ближайших боёв пока нет." }));
+  } else {
+    for (const event of events) main.appendChild(boxingEventCard({ ...event, sport: "boxing" }));
+  }
+  main.appendChild(el("button", { class: "prematch-back", text: "Все разделы", onclick: goHome }));
+  wrap.appendChild(main);
+
+  refreshLiveEvents("boxing").then((changed) => {
+    const top = stack[stack.length - 1];
+    if (changed && top && top.view === "boxingBoard") render();
+  });
   return wrap;
 }
 
@@ -1062,6 +1127,8 @@ if (startView === "casino") {
   navigate("sportTiles");
 } else if (startView === "freeexpress") {
   navigate("freeExpress");
+} else if (startView === "boxing") {
+  navigate("boxingBoard");
 } else if (startView in PLACEHOLDER_TITLES) {
   navigate("placeholder", { title: PLACEHOLDER_TITLES[startView] });
 } else {

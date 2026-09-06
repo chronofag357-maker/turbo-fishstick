@@ -1,0 +1,71 @@
+[
+  {
+    "title": "DWCS · Season 10 · Week 5",
+    "from": "2026-09-08",
+    "to": "2026-09-10",
+    "source": "https://www.ufc.com.br/news/contender-series-10-cards-completos",
+    "stage": "Претендентская серия · Легчайший вес",
+    "pairs": [
+      [
+        "Won Il Kwon",
+        "Apollo Gomes"
+      ]
+    ],
+    "originalTitle": "DWCS · Season 10 · Week 5"
+  },
+  {
+    "title": "FCR 30 · Fight Club Rush · Векшё",
+    "from": "2026-09-12",
+    "to": "2026-09-14",
+    "source": "https://mmatown.com/events/fcr-30-72093",
+    "support": "https://fcrmma.com/events/",
+    "stage": "Основной кард",
+    "pairs": [
+      [
+        "Jon Furuheim",
+        "Claudeci Brito de Sousa"
+      ],
+      [
+        "Mustafa Aliesmaiel",
+        "Elias Ksia"
+      ],
+      [
+        "William Swärd",
+        "Ioseb Amoev"
+      ]
+    ],
+    "originalTitle": "FCR 30"
+  },
+  {
+    "title": "BKFC 94 · Тилл — Ромеро · Манчестер",
+    "from": "2026-09-26",
+    "to": "2026-09-28",
+    "source": "https://www.bkfc.com/events/bkfc-94-manchester",
+    "stage": "Главный бой · Бокс на голых кулаках",
+    "pairs": [
+      [
+        "Darren Till",
+        "Yoel Romero"
+      ]
+    ],
+    "auto": true,
+    "originalTitle": "BKFC 94 MANCHESTER TILL vs ROMERO"
+  },
+  {
+    "title": "UFC Fight Night 288 · Noche UFC · Глендейл",
+    "groupSource": "https://www.ufc.com/event/ufc-fight-night-september-12-2026",
+    "from": "2026-09-12",
+    "to": "2026-09-14",
+    "source": "https://sports.yahoo.com/articles/noche-ufc-4-loses-another-150453301.html",
+    "stage": "Отмена — по сообщению источника",
+    "cancelled": true,
+    "pairs": [
+      [
+        "Ramiro Jimenez",
+        "Rodrigo Vera"
+      ]
+    ],
+    "unavailable": true,
+    "originalTitle": "Noche UFC: Silva vs Delgado"
+  }
+]

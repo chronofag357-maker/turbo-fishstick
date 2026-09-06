@@ -202,6 +202,9 @@ function findArbitrage(quotes) {
 // with a public HTTPS URL. Left empty, the app just keeps using the demo
 // data above forever, exactly like before this existed.
 const MINI_APP_API_BASE = (typeof window !== "undefined" && window.MINI_APP_API_BASE) || "";
+const LIVE_STATE = {};
+// The boxing board must never present sample fighters as current API data.
+EVENTS.boxing = [];
 
 // Replaces EVENTS[sport] with the bot's real schedule for that sport, if the
 // API is configured and reachable. Silently keeps the demo data on any
@@ -211,20 +214,27 @@ const MINI_APP_API_BASE = (typeof window !== "undefined" && window.MINI_APP_API_
 // Returns true only when the fetched schedule actually differs from what's
 // already in EVENTS[sport] — callers re-render on a true result, so a stable
 // "false" once the data settles is what stops that from looping forever.
-async function refreshLiveEvents(sport) {
-  if (!MINI_APP_API_BASE) return false;
+async function refreshLiveEvents(sport, force = false) {
+  const previous = LIVE_STATE[sport];
+  if (previous?.loading || (!force && previous && Date.now() - previous.at < 30000)) return false;
+  LIVE_STATE[sport] = { loading: true, at: Date.now(), message: "Загружаем расписание…" };
+  if (!MINI_APP_API_BASE) {
+    LIVE_STATE[sport] = { at: Date.now(), message: "Источник расписания пока не подключён." };
+    return true;
+  }
   try {
     const res = await fetch(`${MINI_APP_API_BASE}/api/events?sport=${encodeURIComponent(sport)}`, {
-      signal: AbortSignal.timeout(6000),
+      signal: AbortSignal.timeout(15000),
     });
-    if (!res.ok) return false;
+    if (!res.ok) throw new Error("API unavailable");
     const rows = await res.json();
-    if (!Array.isArray(rows) || !rows.length) return false;
-    if (JSON.stringify(rows) === JSON.stringify(EVENTS[sport])) return false;
+    if (!Array.isArray(rows)) throw new Error("Invalid schedule");
     EVENTS[sport] = rows;
+    LIVE_STATE[sport] = { at: Date.now(), message: "Обновлено в " + new Date().toLocaleTimeString("ru-RU") };
     return true;
   } catch {
-    return false;
+    LIVE_STATE[sport] = { at: Date.now(), message: "Не удалось обновить расписание. Попробуйте ещё раз." };
+    return true;
   }
 }
 

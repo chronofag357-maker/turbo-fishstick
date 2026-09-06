@@ -4,3 +4,9 @@ __pycache__/
 .env
 bot.db
 *.db
+*.log
+*.err.log
+.venv.broken-*/
+test_api.py
+.tools/
+*.zip

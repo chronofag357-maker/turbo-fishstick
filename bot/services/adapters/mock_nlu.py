@@ -6,7 +6,7 @@ class MockNLUAdapter(NLUAdapter):
     numeric analysis always goes through the analytics engine, never through this.
     """
 
-    async def answer(self, question: str) -> str:
+    async def answer(self, question: str, context: str = "") -> str:
         return (
             "Свободные вопросы пока обрабатываются упрощённо: подключите реальную "
             "LLM в bot/services/registry.py (функция 7 паспорта бота).\n\n"

@@ -1,0 +1,12 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const ctx={window:{}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('docs/ufc-cards.js','utf8'),ctx);
+const lookup=(a,b,date='2026-09-19T22:45:00Z')=>ctx.window.ufcCardInfo({sport_key:'mma_mixed_martial_arts',home_team:a,away_team:b,commence_time:date});
+assert.match(lookup('Giga Chikadze','Joanderson Brito').title,/UFC 331/);
+assert.equal(lookup('Giga Chikadze','Joanderson Brito').stage,'Ранние прелимы');
+assert.match(lookup('Alexandre Pantoja','Joshua Van').stage,/За титул/);
+assert.match(lookup('Jean Silva','Jose Miguel Delgado','2026-09-12T23:45:00Z').stage,/Главный бой/);
+assert.equal(lookup('Jean Silva','Jose Delgado','2027-09-12T23:45:00Z'),null);
+assert.match(lookup('Natalia Silva','Wang Cong','2026-10-04T04:30:00Z').title,/332/);
+assert.match(lookup('Alexander Volkanovski','Movsar Evloev','2026-10-25T04:00:00Z').title,/333/);
+assert.equal(lookup('Unknown','Fighter'),null);
+console.log('PASS: tournament, stage, title, reversed pairs, aliases, date guard, unknown bout');

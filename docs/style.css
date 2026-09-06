@@ -519,6 +519,123 @@ table.odds-table td:first-child {
   color: var(--accent-good);
 }
 
+/* Compact bookmaker-inspired prematch board. It deliberately uses the app's
+   own neutral visual language and does not copy any bookmaker branding. */
+.prematch-app {
+  min-height: 100vh;
+  background: #111316;
+  color: #f3f4f6;
+}
+
+.prematch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #191c20;
+  border-bottom: 1px solid #30343a;
+}
+
+.prematch-brand {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.prematch-live {
+  color: #f3b33d;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.prematch-main {
+  padding: 18px 12px 28px;
+}
+
+.prematch-title {
+  font-size: 24px;
+  font-weight: 750;
+  margin: 2px 4px 8px;
+}
+
+.prematch-note {
+  margin: 0 4px 16px;
+  color: #a7adb7;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.prematch-card {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 14px;
+  border: 1px solid #30343a;
+  border-radius: 8px;
+  background: #1b1f24;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.prematch-card:active {
+  background: #23282f;
+}
+
+.prematch-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #9da4af;
+  font-size: 12px;
+}
+
+.prematch-fighters {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.prematch-fighters > :last-child {
+  text-align: right;
+}
+
+.prematch-versus {
+  color: #f3b33d;
+  font-size: 11px;
+  letter-spacing: 0.8px;
+}
+
+.prematch-action {
+  color: #f3b33d;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.prematch-empty {
+  border: 1px dashed #3c424a;
+  border-radius: 8px;
+  padding: 28px 16px;
+  color: #a7adb7;
+  text-align: center;
+}
+
+.prematch-back {
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid #3c424a;
+  border-radius: 7px;
+  padding: 12px;
+  background: transparent;
+  color: #f3f4f6;
+  font-weight: 600;
+}
+
 .mascot-bounce {
   font-size: 48px;
   text-align: center;

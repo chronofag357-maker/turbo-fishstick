@@ -1,0 +1,14 @@
+<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Open Boxing — обзор источника</title><style>body{font:15px/1.5 system-ui;color:#252b3d;max-width:980px;margin:32px auto;padding:0 16px}h1{font-size:25px}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:12px;text-align:left;vertical-align:top}th{background:#f3f4f7}.warning{padding:14px;background:#fff2d9;border-radius:8px}a{color:#295ba5}</style>
+<h1>Open Boxing: что можно использовать</h1><p>Проверка: 6 сентября 2026 · <a href="https://www.openboxing.org/api/">Документация источника</a></p>
+<p class="warning">Не подходит для текущего расписания: «предстоящие» бои в доступной веб-выдаче датированы июлем–сентябрём 2023 года. В мини-апку они не добавлены. Прямое скачивание JSON не удалось.</p>
+<table><thead><tr><th>Что есть</th><th>Как использовать</th><th>Что учитывать</th></tr></thead><tbody>
+<tr><td>Пары и даты боёв</td><td>История встреч</td><td>Не считать статус SCHEDULED подтверждением будущего боя</td></tr>
+<tr><td>Весовая категория</td><td>Описание конкретного боя</td><td>Вес старого боя не переносится на новый</td></tr>
+<tr><td>Запланированные раунды</td><td>Дистанция боя</td><td>Отдельно от раунда завершения</td></tr>
+<tr><td>Титулы WBC, WBA, IBF, WBO и другие</td><td>Исторические пояса на кону</td><td>Актуальность нужно сверять</td></tr>
+<tr><td>Результат и способ победы</td><td>История выступлений</td><td>Возможны пропуски</td></tr>
+<tr><td>Имена и даты рождения</td><td>Карточки чемпионов</td><td>Не обещает всех боксёров</td></tr>
+<tr><td>Чемпионские периоды</td><td>История владения поясом</td><td>Поле current не гарантирует свежесть</td></tr>
+<tr><td>Арена, город, страна</td><td>Место проведения</td><td>В проверенных будущих боях не заполнены</td></tr>
+<tr><td>Точное время и коэффициенты</td><td>Оставить The Odds</td><td>У Open Boxing в проверенной схеме отсутствуют</td></tr>
+</tbody></table><p>Вывод: кандидат для исторического справочника, не замена актуальному Boxing Data. Полные JSON-наборы не сохранены; причины зафиксированы в import-report.json.</p></html>

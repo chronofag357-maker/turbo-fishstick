@@ -1,0 +1,17 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const context={window:{}};vm.createContext(context);
+vm.runInContext(fs.readFileSync('docs/odds-updates.js','utf8').split('(() => {')[0],context);
+const compare=context.window.oddsMovement;
+const a={fighters:['A','B'],priceKey:'book',totalKey:'book',odds:[2,null,3],totals:{line:2.5,over:1.8,under:2}};
+const b={...a,odds:[2.2,null,2.8],totals:{line:2.5,over:1.9,under:1.9}};
+assert.equal(compare(a,b).outcomes0.direction,'up');
+assert.equal(compare(a,b).outcomes2.direction,'down');
+assert.equal(compare(a,b).totals1.direction,'up');
+assert.equal(compare(a,b).totals2.direction,'down');
+assert.equal(Object.keys(compare(a,a)).length,0);
+assert.equal(Object.keys(compare(null,b)).length,0);
+assert.equal(compare(a,{...b,priceKey:'different'}).outcomes0,undefined);
+assert.equal(compare(a,{...b,totals:{...b.totals,line:3.5}}).totals1,undefined);
+assert.equal(Object.keys(compare(a,{...b,unavailable:true})).length,0);
+assert.equal(Object.keys(compare(a,{...b,fighters:['B','A']})).length,0);
+console.log('PASS: rises, falls, unchanged, initial load, bookmaker/line changes, stale data, fighter order');

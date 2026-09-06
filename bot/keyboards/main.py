@@ -1,8 +1,26 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
+from urllib.parse import urlsplit, urlunsplit
 
 from bot.db.models import SportSetting
 from bot.services.adapters.base import Competitor, Event
+
+
+def freebk_url(mini_app_url: str) -> str:
+    parts = urlsplit(mini_app_url)
+    path = parts.path
+    if path.endswith('.html'):
+        path = path.rsplit('/', 1)[0] + '/'
+    path = path.rstrip('/') + '/mini-app.html'
+    return urlunsplit((parts.scheme, parts.netloc, path, '', ''))
+
+
+def freebk_keyboard(mini_app_url: str) -> InlineKeyboardMarkup | None:
+    if not mini_app_url:
+        return None
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
+        text='Запустить FreeBK', web_app=WebAppInfo(url=freebk_url(mini_app_url))
+    )]])
 
 
 def quick_access_keyboard(mini_app_url: str) -> ReplyKeyboardMarkup:
@@ -11,6 +29,7 @@ def quick_access_keyboard(mini_app_url: str) -> ReplyKeyboardMarkup:
     App directly, no intermediate message.
     """
     builder = ReplyKeyboardBuilder()
+    builder.button(text='Запустить FreeBK', web_app=WebAppInfo(url=freebk_url(mini_app_url)))
     builder.button(text="🎯 Экспресс", web_app=WebAppInfo(url=f"{mini_app_url}?view=express"))
     builder.button(text="📱 Mini App", web_app=WebAppInfo(url=mini_app_url))
     builder.button(text="🥋 UFC-предматч", web_app=WebAppInfo(url=f"{mini_app_url}?view=ufc"))
@@ -29,9 +48,11 @@ def main_menu(mini_app_url: str = "") -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text="🎁 Получить бесплатные экспрессы", callback_data="contact_human")
     if mini_app_url:
-        builder.button(text="📱 Открыть Mini App", web_app=WebAppInfo(url=mini_app_url))
-        builder.button(text="🥋 MMAboxing", web_app=WebAppInfo(url=f"{mini_app_url}?view=sportstiles"))
-    builder.adjust(1)
+        builder.button(text='Запустить FreeBK', web_app=WebAppInfo(url=freebk_url(mini_app_url)))
+        builder.button(text="🥊 Бокс: ближайшие бои", web_app=WebAppInfo(url=f"{mini_app_url}?view=boxing"))
+        builder.button(text="📱 Все разделы", web_app=WebAppInfo(url=mini_app_url))
+        builder.button(text="🥋 MMA и бокс", web_app=WebAppInfo(url=f"{mini_app_url}?view=sportstiles"))
+    builder.adjust(1, 1, 1)
     return builder.as_markup()
 
 
