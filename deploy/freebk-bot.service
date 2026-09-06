@@ -1,0 +1,24 @@
+[Unit]
+Description=FreeBK Telegram bot and Mini App API
+After=network-online.target
+Wants=network-online.target
+Conflicts=freebk-api.service
+[Service]
+User=freebk
+Group=freebk
+WorkingDirectory=/opt/freebk/app
+Environment=PYTHONUNBUFFERED=1
+Environment=MINI_APP_API_PORT=8082
+Environment=MINI_APP_URL=https://159-194-244-46.sslip.io/
+Environment=PROXY_URL=
+ExecStart=/opt/freebk/app/.venv/bin/python -m bot.main
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/freebk/app
+ProtectHome=true
+UMask=0077
+[Install]
+WantedBy=multi-user.target
