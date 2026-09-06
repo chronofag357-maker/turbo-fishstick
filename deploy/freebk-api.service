@@ -1,0 +1,22 @@
+[Unit]
+Description=FreeBK Mini App API
+After=network-online.target
+Wants=network-online.target
+[Service]
+User=freebk
+Group=freebk
+WorkingDirectory=/opt/freebk/app
+Environment=PYTHONUNBUFFERED=1
+Environment=MINI_APP_API_PORT=8082
+Environment=PROXY_URL=
+ExecStart=/opt/freebk/app/.venv/bin/python -m bot.web.api
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/freebk/app
+ProtectHome=true
+UMask=0077
+[Install]
+WantedBy=multi-user.target
