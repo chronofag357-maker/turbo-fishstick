@@ -8,6 +8,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
 apt-get install -y python3-venv git nginx certbot python3-certbot-nginx
 id freebk >/dev/null 2>&1 || useradd --system --create-home --home-dir /opt/freebk --shell /usr/sbin/nologin freebk
+chmod 751 /opt/freebk
 if [ ! -d /opt/freebk/app/.git ]; then
   git clone https://github.com/chronofag357-maker/turbo-fishstick.git /opt/freebk/app
 fi
