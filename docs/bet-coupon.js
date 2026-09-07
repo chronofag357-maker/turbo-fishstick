@@ -82,7 +82,7 @@
   const total=()=>[...picks.values()].reduce((n,p)=>n*p.value,1);
   function amount(){const v=stake.trim().replace(',','.');return /^\d+(?:\.\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0}
   function validity(){
-    if(!account())return 'Войдите в профиль, чтобы оформить тестовое пари.';
+    if(!account())return 'Войдите в профиль, чтобы оформить пари.';
     if([...picks.values()].some(p=>!latest(p)))return 'Один из исходов недоступен. Удалите его из купона.';
     if([...picks.values()].some(p=>changed(p,latest(p))))return 'Линия изменилась. Проверьте и примите новые коэффициенты.';
     if(!amount())return 'Введите сумму от 1 000 до 10 000, не более двух знаков после запятой.';
@@ -198,7 +198,7 @@
     const remove=e.target.closest('[data-coupon-remove]');if(remove){picks.delete(remove.dataset.couponRemove);notice='';render();return;}
     if(e.target.closest('[data-coupon-settings]')){settingsOpen=!settingsOpen;draw();return;}
     if(e.target.closest('[data-coupon-system]')){notice='Система пока не подключена. Доступны ординар и экспресс.';summary();return;}
-    if(e.target.closest('[data-coupon-fund]')){notice='Пополнение пока не подключено. Используется тестовый баланс.';summary();return;}
+    if(e.target.closest('[data-coupon-fund]')){notice='Пополнение и вывод денег не подключены.';summary();return;}
     if(e.target.closest('[data-coupon-min]')){stake='1000';notice='';draw();return;}
     if(e.target.closest('[data-coupon-max]')){stake='10000';notice='';draw();return;}
     if(e.target.closest('[data-coupon-copy]')){

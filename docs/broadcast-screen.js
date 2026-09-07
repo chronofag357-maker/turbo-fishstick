@@ -88,15 +88,15 @@
     opener=document.activeElement;
     const menu=document.getElementById('panel');if(menu?.open)menu.close();
     const frame=document.createElement('iframe');frame.title='Экран трансляций P2P Market';
-    frame.allow='autoplay; fullscreen; picture-in-picture';frame.allowFullscreen=true;
+    frame.allow='autoplay; fullscreen; picture-in-picture; camera; microphone; display-capture';frame.allowFullscreen=true;
     frame.addEventListener('load',()=>{
       const doc=frame.contentDocument;if(!doc)return;
       doc.querySelector('.back')?.addEventListener('click',e=>{e.preventDefault();close()});
       doc.addEventListener('keydown',e=>{
-        if(e.key==='Escape'&&!doc.getElementById('watch-sheet')?.open){e.preventDefault();close()}
+        if(e.key==='Escape'&&!e.defaultPrevented&&!doc.body.classList.contains('is-expanded')){e.preventDefault();close()}
       });
     });
-    frame.src='broadcasts.html?v=84&embedded=1';screen.append(frame);
+    frame.src='broadcasts.html?v=123&embedded=1';screen.append(frame);
     screen.style.transform='translateY(100%)';screen.showModal();
     animate('translateY(0)',()=>{screen.style.transform='translateY(0)';motion?.cancel();motion=null});
   }

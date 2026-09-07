@@ -1,40 +1,37 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f7f7f8">
-  <title>P2P Market — Трансляции</title>
-  <link rel="stylesheet" href="broadcasts.css?v=71">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>P2P Market — Трансляции</title><link rel="stylesheet" href="broadcasts.css?v=123">
 </head>
-<body>
-  <main class="app">
-    <header><a class="back" href="mini-app.html?v=70" aria-label="Вернуться к боям">‹</a><h1>Трансляция</h1><span class="brand">P2P Market</span></header>
-    <section class="channel" aria-labelledby="channel-name">
-      <div class="channel-heading"><h2 id="channel-name">TrillerTV 24/7</h2><span class="badge">ТВ-эфир · 24/7</span></div>
-      <p class="description">Бокс, MMA и другие спортивные шоу</p>
-      <div class="player" id="player"></div>
-      <button class="watch-button" id="watch" type="button" aria-haspopup="dialog" aria-controls="watch-sheet" aria-expanded="false">Смотреть <span aria-hidden="true">⌃</span></button>
-      <p id="player-status" role="status" aria-live="polite">Подключаем плеер TrillerTV…</p>
-      <div class="actions"><button id="reload" type="button">↻ Перезагрузить плеер</button><a href="https://www.trillertv.com/watch/fite-24-7/2p6mu/" target="_blank" rel="noopener noreferrer">Смотреть на TrillerTV ↗</a></div>
-      <p class="note">Нажмите ▶ внутри плеера для просмотра. Канал может показывать записи: круглосуточный эфир не означает, что бой проходит сейчас.</p>
-      <details><summary>Об источнике</summary><p>Официальный плеер бесплатного канала TrillerTV. Программу, рекламу и доступность определяет вещатель. Если видео не запускается или требуется вход, откройте источник по ссылке выше.</p></details>
-    </section>
-    <footer>P2P Market · Трансляции</footer>
-  </main>
-  <dialog class="watch-sheet" id="watch-sheet" aria-labelledby="sheet-title" aria-describedby="sheet-description">
-    <button class="sheet-drag" id="sheet-drag" type="button" aria-label="Свернуть купон" aria-expanded="true" aria-controls="sheet-content"><span class="sheet-handle" aria-hidden="true"></span></button>
-    <div class="sheet-heading"><h2 id="sheet-title">Купон <span class="sheet-count">4</span></h2><button id="sheet-toggle" class="sheet-toggle" type="button" aria-label="Свернуть купон" aria-expanded="true" aria-controls="sheet-content">⌄</button></div>
-    <div id="sheet-content" class="sheet-content">
-    <p id="sheet-description">Демонстрация · ставки не принимаются</p>
-    <div class="sheet-rows">
-      <div class="sheet-row"><span class="row-number">1</span><div><strong>Победа бойца 1</strong><small>Пример события</small></div><span class="demo-odd">1,85</span></div>
-      <div class="sheet-row"><span class="row-number">2</span><div><strong>Победа бойца 2</strong><small>Пример события</small></div><span class="demo-odd">2,10</span></div>
-      <div class="sheet-row"><span class="row-number">3</span><div><strong>Тотал раундов больше 2,5</strong><small>Пример события</small></div><span class="demo-odd">1,70</span></div>
-      <div class="sheet-row"><span class="row-number">4</span><div><strong>Тотал раундов меньше 2,5</strong><small>Пример события</small></div><span class="demo-odd">2,20</span></div>
-    </div>
-    </div>
-  </dialog>
-  <script src="broadcasts.js?v=71"></script>
-</body>
-</html>
+<body><main class="app">
+<header><a class="back" href="mini-app.html?v=122" aria-label="Вернуться к боям">‹</a><nav aria-label="Раздел просмотра"><button id="tv-tab" aria-controls="tv-panel" aria-pressed="true">Трансляция</button><button id="stream-tab" aria-controls="stream-panel" aria-pressed="false">Стрим</button></nav></header>
+<section id="tv-panel" aria-labelledby="tv-tab">
+<div class="channel-heading"><h1>TrillerTV 24/7</h1><span class="badge">ТВ-эфир</span></div>
+<div class="player-shell" id="player-shell"><div class="player" id="player"></div><button id="expand" aria-expanded="false" aria-controls="player-shell">Развернуть ⛶</button></div>
+<p id="player-status" role="status" aria-live="polite"></p>
+<div class="actions"><button id="reload">↻ Перезагрузить</button><a href="https://www.trillertv.com/watch/fite-24-7/2p6mu/" target="_blank" rel="noopener noreferrer">Источник ↗</a></div>
+<details><summary>Об источнике</summary><p>Официальный плеер TrillerTV. Нажмите ▶ внутри видео. Канал может показывать записи; эфир 24/7 не означает, что бой идёт сейчас. Программу, рекламу и доступность определяет вещатель.</p></details>
+</section>
+<section id="stream-panel" aria-labelledby="stream-tab" hidden>
+<h1>Комната участников</h1><div class="stream-grid">
+<div class="stream-slot" id="self-slot"><video id="self-video" autoplay muted playsinline hidden></video><span>Вы · камера выключена</span></div>
+<div class="stream-slot"><span>Участник 2 · не подключён</span></div>
+<div class="stream-slot"><span>Участник 3 · не подключён</span></div>
+</div>
+<button id="self-camera" type="button" aria-pressed="false">Проверить мою камеру</button>
+<p id="self-status" class="stream-note" role="status">Проверка без записи и отправки видео. Микрофон не включается.</p>
+<form id="stream-form">
+<label for="stream-room">Ссылка комнаты Jitsi</label>
+<input id="stream-room" type="text" autocomplete="off" spellcheck="false" placeholder="https://meet.jit.si/…" maxlength="200">
+<div class="stream-actions"><button id="stream-new" type="button">Новая комната</button><button id="stream-copy" type="button">Пригласить</button></div>
+<button id="stream-join" type="submit">Подключиться</button>
+</form>
+<p class="stream-note">Видео, голос и чат работают через внешний сервис Jitsi. Ссылку отправляйте только своим: доступ по ссылке, не по аккаунтам P2P Market. Организатору потребуется вход в Jitsi; включите пароль или зал ожидания в настройках комнаты.</p>
+<div id="stream-call" hidden><button id="stream-leave" type="button">Завершить подключение</button><div id="stream-meeting"></div></div>
+<p id="stream-status" class="stream-note" role="status" aria-live="polite"></p>
+<a id="stream-browser" target="_blank" rel="noopener noreferrer" hidden>Открыть комнату в браузере ↗</a>
+<p class="stream-note">Если Telegram не разрешает камеру или микрофон, откройте ссылку во внешнем браузере. При выходе из раздела соединение прерывается. Записи звонка и сохранения чата в P2P Market нет.</p>
+</section>
+<footer>P2P Market · Трансляции</footer>
+</main><script src="broadcasts.js?v=123"></script><script src="stream-room.js?v=123"></script><script src="self-camera.js?v=123"></script></body></html>

@@ -148,7 +148,7 @@ window.freebkMenuContent = () => `
       return;
     }
     document.querySelector('.menu-demo-message').textContent=button.dataset.menuDemo==='balance'
-      ? 'Пополнение пока недоступно. Здесь показан демонстрационный баланс, не реальные деньги.'
+      ? 'Пополнение и вывод денег не подключены.'
       : 'Вход через Telegram пока не подключён. Никнейм сам по себе не подтверждает аккаунт.';
   });
 })();
