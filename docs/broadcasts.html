@@ -25,13 +25,13 @@
 <label for="stream-room">Ссылка комнаты Jitsi</label>
 <input id="stream-room" type="text" autocomplete="off" spellcheck="false" placeholder="https://meet.jit.si/…" maxlength="200">
 <div class="stream-actions"><button id="stream-new" type="button">Новая комната</button><button id="stream-copy" type="button">Пригласить</button></div>
-<button id="stream-join" type="submit">Подключиться</button>
+<button id="stream-join" type="submit">Войти с камерой и микрофоном</button>
 </form>
-<p class="stream-note">Видео, голос и чат работают через внешний сервис Jitsi. Ссылку отправляйте только своим: доступ по ссылке, не по аккаунтам P2P Market. Организатору потребуется вход в Jitsi; включите пароль или зал ожидания в настройках комнаты.</p>
+<details class="stream-note"><summary>Как подключиться втроём</summary><p>Организатор создаёт одну комнату и отправляет ссылку двум друзьям кнопкой «Пригласить». Друзья вставляют эту же ссылку в поле выше, не создавая новые комнаты. Все нажимают «Войти с камерой и микрофоном» и подтверждают вход в Jitsi. Чтобы видеть всех одновременно, включите плиточный вид (иконка сетки) в Jitsi; кнопка чата открывает переписку.</p><p>Связь идёт через внешний Jitsi. Организатору потребуется авторизация. Доступ по ссылке, не по аккаунтам P2P Market: включите пароль или зал ожидания. Перед подключением камера и микрофон будут доступны для проверки в Jitsi.</p></details>
 <div id="stream-call" hidden><button id="stream-leave" type="button">Завершить подключение</button><div id="stream-meeting"></div></div>
 <p id="stream-status" class="stream-note" role="status" aria-live="polite"></p>
 <a id="stream-browser" target="_blank" rel="noopener noreferrer" hidden>Открыть комнату в браузере ↗</a>
 <p class="stream-note">Если Telegram не разрешает камеру или микрофон, откройте ссылку во внешнем браузере. При выходе из раздела соединение прерывается. Записи звонка и сохранения чата в P2P Market нет.</p>
 </section>
 <footer>P2P Market · Трансляции</footer>
-</main><script src="broadcasts.js?v=123"></script><script src="stream-room.js?v=123"></script><script src="self-camera.js?v=123"></script></body></html>
+</main><script src="broadcasts.js?v=123"></script><script src="stream-room.js?v=124"></script><script src="self-camera.js?v=123"></script></body></html>

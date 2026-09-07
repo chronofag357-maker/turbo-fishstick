@@ -6,6 +6,20 @@
  const meeting=document.getElementById('stream-meeting'), form=document.getElementById('stream-form');
  const grid=document.querySelector('.stream-grid');
  let timer;
+ const storageKey='p2p-stream-room';
+ const meetingConfig={
+  'config.deeplinking.disabled':true,
+  'config.disableDeepLinking':true,
+  'config.startWithAudioMuted':false,
+  'config.startWithVideoMuted':false,
+  'config.prejoinConfig.enabled':true,
+  'config.tileView.numberOfVisibleTiles':3,
+  'interfaceConfig.TILE_VIEW_MAX_COLUMNS':2,
+  'config.toolbarButtons':['microphone','camera','chat','tileview','participants-pane','security','settings','fullscreen','hangup'],
+  'config.toolbarConfig.alwaysVisible':true
+ };
+ const meetingHash=Object.entries(meetingConfig).map(([key,value])=>key+'='+encodeURIComponent(JSON.stringify(value))).join('&');
+ function remember(value){try{localStorage.setItem(storageKey,value);}catch{}}
  function url(){
   try{
    const value=new URL(room.value.trim());
@@ -15,7 +29,7 @@
  }
  function update(){
   const value=url();browser.hidden=!value;
-  if(value)browser.href=value;else browser.removeAttribute('href');
+  if(value){browser.href=value+'#'+meetingHash;remember(value);}else browser.removeAttribute('href');
   return value;
  }
  function leave(message='Подключение завершено.'){
@@ -40,12 +54,12 @@
   if(!value){status.textContent='Нужна ссылка комнаты https://meet.jit.si/… (название от 10 символов).';return;}
   if(!window.isSecureContext){status.textContent='Для камеры и микрофона нужен HTTPS. Откройте комнату в браузере по ссылке ниже.';return;}
   leave('');form.hidden=true;grid.hidden=true;call.hidden=false;
-  status.textContent='Открываем Jitsi. Разрешите камеру и микрофон, затем войдите в комнату.';
+  status.textContent='Открываем общую комнату. Проверьте камеру и микрофон на экране входа Jitsi, затем присоединитесь.';
   const frame=document.createElement('iframe');
   frame.title='Jitsi — видео, голос и чат участников';
   frame.allow='camera; microphone; fullscreen; display-capture; autoplay';
   frame.allowFullscreen=true;frame.referrerPolicy='no-referrer';
-  frame.src=value+'#config.startWithAudioMuted=true&config.startWithVideoMuted=true';
+  frame.src=value+'#'+meetingHash;
   // Loading a document does not prove that the user has joined a call.
   frame.addEventListener('load',()=>{clearTimeout(timer);status.textContent='Завершите вход в Jitsi внутри окна. Если оно пустое или вход не работает — откройте комнату в браузере.';});
   meeting.append(frame);
@@ -55,5 +69,8 @@
  document.getElementById('tv-tab').addEventListener('click',()=>leave());
  browser.addEventListener('click',()=>leave('Комната открывается отдельно. Здесь камера и микрофон отключены.'));
  window.addEventListener('pagehide',()=>leave(''));
- newRoom();
+ let saved;try{saved=localStorage.getItem(storageKey);}catch{}
+ if(saved){room.value=saved;}
+ if(update())status.textContent='Последняя комната восстановлена. Все участники должны использовать эту же ссылку.';
+ else newRoom();
 })();

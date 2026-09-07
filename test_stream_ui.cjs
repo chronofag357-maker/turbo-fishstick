@@ -22,11 +22,16 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
   await page.locator('#stream-join').click();assert.equal(calls,0);
   await page.locator('#stream-room').fill(url);await page.locator('#stream-join').click();
   await page.waitForFunction(()=>!!document.querySelector('#stream-meeting iframe'));
-  assert.match(await page.locator('#stream-meeting iframe').getAttribute('src'),/startWithAudioMuted=true/);
+  const meetingSrc=await page.locator('#stream-meeting iframe').getAttribute('src');
+  assert.match(meetingSrc,/startWithAudioMuted=false/);
+  assert.match(meetingSrc,/config.deeplinking.disabled=true/);
+  assert.match(meetingSrc,/config.tileView.numberOfVisibleTiles=3/);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await page.locator('#stream-leave').click();
   assert.equal(await page.locator('#stream-meeting iframe').count(),0);
   await page.screenshot({path:'.tools/stream-ready-'+width+'.png'});
+  await page.reload();await page.locator('#stream-tab').click();
+  assert.equal(await page.locator('#stream-room').inputValue(),url);
   await page.close();
  }console.log('PASS: 320/390 camera preview, no audio, tracks released, Jitsi consent, URL validation, leave');}
  finally{await browser.close();}
