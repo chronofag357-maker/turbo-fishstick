@@ -103,9 +103,9 @@ async def logout(request):
 
 
 def verified_pick(p, feed, now):
-    if feed.get('stale') or feed.get('error'):
-        raise Conflict('Источник недоступен. Пари не принято.')
     event = next((e for e in feed.get('events', []) if e['id'] == p['id']), None)
+    if feed.get('error') or not event or event.get('line_invalid') or event.get('line_stale', feed.get('stale', False)):
+        raise Conflict('Линия этого боя недоступна или устарела. Обновите его стрелочкой.')
     if not event or now-event.get('line_fetched_at', feed.get('fetched_at', 0)) > 120:
         raise Conflict('Линия устарела. Обновите бой перед оформлением.')
     book = next((b for b in event['bookmakers'] if b['key'] == p['sourceKey']), None)
@@ -178,6 +178,27 @@ async def action(request):
     return web.json_response({'ok': True})
 
 
+async def refresh_event(request):
+    data = await object_body(request)
+    from bot.services.odds_feed import get_feed, SPORTS
+    sport, event_id = data.get('sport'), data.get('eventId')
+    if sport not in SPORTS or not isinstance(event_id, str) or not 1 <= len(event_id) <= 80 or not all(c.isalnum() or c in '-_' for c in event_id):
+        raise ValueError()
+    # Account-wide cap as well as the shared per-event 60-second cooldown.
+    uid = request['identity']['id']
+    now = time.monotonic()
+    if now-refresh_attempts.get(uid, -100) < 5:
+        raise Conflict('Подождите несколько секунд перед следующим обновлением.')
+    refresh_attempts[uid] = now
+    result = await get_feed(sport, force=True, event_id=event_id)
+    await call(store.action, uid, 'manual_refresh', {'event': event_id, 'sport': sport, 'success': not result.get('stale')})
+    from bot.web.api import format_odds
+    return await format_odds(result, sport)
+
+
+refresh_attempts = {}
+
+
 async def report(request):
     return web.json_response({**await call(store.report), 'policy': await call(store.policy)})
 
@@ -246,6 +267,6 @@ def install(app):
     app.on_startup.append(startup)
     app.cleanup_ctx.append(scheduler)
     for method, path, handler in [('POST', 'login', login), ('GET', 'me', me), ('POST', 'logout', logout),
-            ('POST', 'bets', place), ('POST', 'actions', action), ('GET', 'admin/report', report),
+            ('POST', 'bets', place), ('POST', 'actions', action), ('POST', 'refresh', refresh_event), ('GET', 'admin/report', report),
             ('POST', 'admin/allow', allow), ('POST', 'admin/result', result), ('POST', 'admin/policy', policy)]:
         app.router.add_route(method, '/api/private/'+path, handler)

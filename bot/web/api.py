@@ -62,6 +62,10 @@ async def odds(request: web.Request) -> web.Response:
     event_id = request.query.get('eventId')
     # Public refresh must not bypass the owner's global quota/interval policy.
     result = await get_feed(sport, force=False, event_id=event_id)
+    return await format_odds(result, sport)
+
+
+async def format_odds(result, sport):
     if sport == 'mma' and result.get('events'):
         from bot.services.tournament_metadata import enrich
         result = {**result, 'events': await enrich(result['events'])}

@@ -98,13 +98,13 @@ if(busy)return;busy=true;refresh.disabled=true;status.textContent='Загруз�
 const before=eventId?priceSnapshot(current.find(e=>e.id===eventId)):null;
 try{
 const base=window.FREEBK_API_BASE;if(!base)throw new Error('Публичный API ещё не настроен.');
-const results=await Promise.all((manualSport?[manualSport]:['mma','boxing']).map(async sport=>{try{const r=await fetch(base.replace(/\/$/,'')+'/api/odds?sport='+sport+(eventId?'&refresh=1&eventId='+encodeURIComponent(eventId):''),{cache:'no-store',signal:AbortSignal.any([signal,AbortSignal.timeout(65000)])}),data=await r.json();if(!r.ok||!Array.isArray(data.events))throw new Error();return{sport,data}}catch{return{sport,error:true}}}));
+const results=await Promise.all((manualSport?[manualSport]:['mma','boxing']).map(async sport=>{try{let data;if(eventId&&window.ServerAccount?.enabled){data=await window.ServerAccount.api('refresh',{sport,eventId});}else{const r=await fetch(base.replace(/\/$/,'')+'/api/odds?sport='+sport,{cache:'no-store',signal:AbortSignal.any([signal,AbortSignal.timeout(65000)])});data=await r.json();if(!r.ok)throw new Error();}if(!Array.isArray(data.events))throw new Error();return{sport,data}}catch(error){return{sport,error:true,data:{refresh_error:error.message}}}}));
 if(signal.aborted)return;
 if(eventId&&results.some(r=>r.data?.manual_throttled)){status.textContent='Повторное обновление доступно через минуту после предыдущего запроса.';notifyRefresh('Подождите минуту: новый запрос поставщику не отправлен.',true);return;}
 if(eventId&&results.some(r=>r.error||r.data?.stale)){const failed=results.find(r=>r.error||r.data?.stale);status.textContent='Не удалось обновить этот бой. Сохранённые коэффициенты оставлены без изменений.';notifyRefresh('Ошибка обновления. '+(failed.data?.event_missing?'Поставщик больше не возвращает этот бой.':failed.data?.refresh_error||'Нет ответа от сервера или поставщика.'),true);return;}
 if(!summaryOnly){
 for(const r of results)if(r.error)raw=raw.map(e=>e.feedSport===r.sport?{...e,feedUnavailable:true}:e);
-for(const r of results)if(!r.error)raw=raw.filter(e=>e.feedSport!==r.sport).concat(r.data.events.map(e=>({...e,feedSport:r.sport,feedUnavailable:r.data.stale})));
+for(const r of results)if(!r.error)raw=raw.filter(e=>e.feedSport!==r.sport).concat(r.data.events.map(e=>({...e,feedSport:r.sport,feedUnavailable:e.line_stale??r.data.stale})));
 updateBookOptions();renderLines();
 }
 if(results.some(r=>r.data?.manual_throttled)){status.textContent='Повторное обновление доступно через минуту после предыдущего запроса.';return;}

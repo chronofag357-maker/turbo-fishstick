@@ -26,6 +26,7 @@ class PrivateAPITests(unittest.IsolatedAsyncioTestCase):
         app.router.add_post('/api/private/admin/allow', miniapp.allow)
         app.router.add_post('/api/private/admin/result', miniapp.result)
         app.router.add_post('/api/private/bets', miniapp.place)
+        app.router.add_post('/api/private/refresh', miniapp.refresh_event)
         self.client = TestClient(TestServer(app))
         await self.client.start_server()
 
@@ -60,6 +61,16 @@ class PrivateAPITests(unittest.IsolatedAsyncioTestCase):
         r = await self.client.post('/api/private/bets', json={'key': 'invalid', 'stake': -100, 'picks': []}, headers=self.headers(self.owner))
         self.assertEqual(r.status, 400)
         self.assertEqual(self.store.snapshot(1)['balance'], 456000)
+
+    async def test_manual_refresh_requires_account(self):
+        body = {'sport': 'mma', 'eventId': 'one'}
+        r = await self.client.post('/api/private/refresh', json=body)
+        self.assertEqual(r.status, 403)
+        mocked = AsyncMock(return_value={'events': [], 'stale': False})
+        with patch.object(miniapp, 'refresh_attempts', {}), patch('bot.services.odds_feed.get_feed', new=mocked):
+            r = await self.client.post('/api/private/refresh', json=body, headers=self.headers(self.other))
+            self.assertEqual(r.status, 200)
+            mocked.assert_awaited_once_with('mma', force=True, event_id='one')
 
     async def test_accept_settle_refresh_across_sessions(self):
         from datetime import datetime, timezone

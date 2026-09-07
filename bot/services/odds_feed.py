@@ -31,6 +31,13 @@ def datetime_live(event):
     except (KeyError, ValueError, TypeError):
         return False
 
+def present(feed, **flags):
+    result = {**(feed or {'events': []}), **flags}
+    result['events'] = [{**e, 'line_stale': bool(e.get('line_invalid')) or
+                         time.time()-e.get('line_fetched_at', result.get('fetched_at', 0)) > 120}
+                        for e in result['events']]
+    return result
+
 async def get_feed(sport, force=False, event_id=None):
     async with LOCK:
         try:
@@ -38,19 +45,21 @@ async def get_feed(sport, force=False, event_id=None):
         except (OSError, ValueError):
             cache = {}
         old = cache.get(sport)
-        if AUTO_ENABLED is False:
-            return {**(old or {'events': []}), 'stale': True, 'auto_disabled': True,
-                    'refresh_hours': REFRESH_SECONDS/3600, 'refresh_error': 'Автообновление отключено администратором.'}
+        if force and not event_id:
+            raise ValueError('Manual refresh requires an event')
+        if AUTO_ENABLED is False and not force:
+            return present(old, stale=True, auto_disabled=True,
+                           refresh_hours=REFRESH_SECONDS/3600, refresh_error='Автообновление отключено. Можно обновить выбранный бой стрелочкой.')
         if time.time() < RETRY_AFTER.get(sport, 0):
             return {**(old or {'events': []}), 'stale': True, 'refresh_error': 'Повторный запрос отложен после ошибки источника.'}
         manual_key = (sport, event_id)
         if force and time.time() - LAST_MANUAL.get(manual_key, 0) < 60:
-            return {**(old or {'events': []}), 'refresh_hours': REFRESH_HOURS, 'stale': not bool(old), 'manual_throttled': True}
+            return present(old, refresh_hours=REFRESH_SECONDS/3600, stale=not bool(old), manual_throttled=True)
         if force:
             LAST_MANUAL[manual_key] = time.time()
         effective_seconds = max(40 if old and any(datetime_live(e) for e in old.get('events', [])) else 60, REFRESH_SECONDS)
         if not force and old and old.get('regions') == REGIONS and time.time() - old['fetched_at'] < effective_seconds:
-            return {**old, 'refresh_hours': effective_seconds/3600, 'stale': False, 'served_from_cache': True}
+            return present(old, refresh_hours=effective_seconds/3600, stale=False, served_from_cache=True)
         try:
             if not settings.odds_api_key:
                 raise ValueError('missing key')
@@ -91,16 +100,28 @@ async def get_feed(sport, force=False, event_id=None):
             if event_id:
                 updated = next((e for e in rows if e['id'] == event_id), None)
                 if updated is None:
+                    if old:
+                        for e in old['events']:
+                            if e['id'] == event_id:
+                                e['line_invalid'] = True
+                        cache[sport] = old
+                        CACHE.write_text(json.dumps(cache, ensure_ascii=False), encoding='utf-8')
                     return {**(old or {'events': []}), 'stale': True, 'event_missing': True}
                 updated['line_fetched_at'] = time.time()
-                result = {**(old or result), 'events': [updated if e['id'] == event_id else e for e in (old or {'events': rows})['events']]}
+                result = {**(old or result), 'events': [e for e in (old or {'events': []})['events'] if e['id'] != event_id] + [updated]}
             cache[sport] = result
             FAILURES[sport] = 0
             RETRY_AFTER[sport] = 0
             CACHE.parent.mkdir(exist_ok=True)
             CACHE.write_text(json.dumps(cache, ensure_ascii=False), encoding='utf-8')
-            return {**result, 'stale': False}
+            return present(result, stale=False)
         except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as exc:
+            if force and old:
+                for e in old['events']:
+                    if e['id'] == event_id:
+                        e['line_invalid'] = True
+                cache[sport] = old
+                CACHE.write_text(json.dumps(cache, ensure_ascii=False), encoding='utf-8')
             FAILURES[sport] = min(FAILURES.get(sport, 0)+1, 8)
             RETRY_AFTER[sport] = time.time()+min(3600, 60*2**(FAILURES[sport]-1))
             message = str(exc) if isinstance(exc, ValueError) else 'Не удалось связаться с поставщиком: сеть или время ожидания.'
