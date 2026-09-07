@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramNetworkError
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import MenuButtonDefault, MenuButtonWebApp, WebAppInfo
 
@@ -75,17 +76,20 @@ async def main() -> None:
     dp.include_router(voice.router)
     dp.include_router(freeform.router)
 
-    if settings.mini_app_url:
-        await bot.set_chat_menu_button(
-            menu_button=MenuButtonWebApp(text="P2P Market", web_app=WebAppInfo(url=freebk_url(settings.mini_app_url)))
-        )
-    else:
-        await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
-
-    await bot.delete_webhook(drop_pending_updates=False)
+    # Keep accounts/API available even while Telegram's network is unreachable.
     runner = await run_api_server(settings.mini_app_api_port)
     try:
-        await dp.start_polling(bot)
+        while True:
+            try:
+                async with asyncio.timeout(20):
+                    button = MenuButtonWebApp(text="P2P Market", web_app=WebAppInfo(url=freebk_url(settings.mini_app_url))) if settings.mini_app_url else MenuButtonDefault()
+                    await bot.set_chat_menu_button(menu_button=button)
+                    await bot.delete_webhook(drop_pending_updates=False)
+                await dp.start_polling(bot, close_bot_session=False)
+                break
+            except (TelegramNetworkError, TimeoutError):
+                logging.getLogger(__name__).warning('Telegram connection unavailable; API stays online, retry in 15 seconds')
+                await asyncio.sleep(15)
     finally:
         await runner.cleanup()
         await bot.session.close()
