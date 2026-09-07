@@ -1,5 +1,10 @@
 (() => {
   'use strict';
+  if(window.parent!==window&&new URLSearchParams(location.search).get('embedded')==='1'){
+    document.querySelector('.back').addEventListener('click',event=>{
+      event.preventDefault();window.parent.postMessage({type:'freebk-close-broadcast'},location.origin);
+    });
+  }
   // Published by TrillerTV as this channel's schema.org embedUrl.
   const embedUrl = 'https://www.trillertv.com/embed/v1/2p6mu/';
   const host = document.getElementById('player');

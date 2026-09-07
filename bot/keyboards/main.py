@@ -19,7 +19,7 @@ def freebk_keyboard(mini_app_url: str) -> InlineKeyboardMarkup | None:
     if not mini_app_url:
         return None
     return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
-        text='Запустить FreeBK', web_app=WebAppInfo(url=freebk_url(mini_app_url))
+        text='Запустить P2P Market', web_app=WebAppInfo(url=freebk_url(mini_app_url))
     )]])
 
 
@@ -29,7 +29,7 @@ def quick_access_keyboard(mini_app_url: str) -> ReplyKeyboardMarkup:
     App directly, no intermediate message.
     """
     builder = ReplyKeyboardBuilder()
-    builder.button(text='Запустить FreeBK', web_app=WebAppInfo(url=freebk_url(mini_app_url)))
+    builder.button(text='Запустить P2P Market', web_app=WebAppInfo(url=freebk_url(mini_app_url)))
     builder.button(text="🎯 Экспресс", web_app=WebAppInfo(url=f"{mini_app_url}?view=express"))
     builder.button(text="📱 Mini App", web_app=WebAppInfo(url=mini_app_url))
     builder.button(text="🥋 UFC-предматч", web_app=WebAppInfo(url=f"{mini_app_url}?view=ufc"))
@@ -48,7 +48,7 @@ def main_menu(mini_app_url: str = "") -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text="🎁 Получить бесплатные экспрессы", callback_data="contact_human")
     if mini_app_url:
-        builder.button(text='Запустить FreeBK', web_app=WebAppInfo(url=freebk_url(mini_app_url)))
+        builder.button(text='Запустить P2P Market', web_app=WebAppInfo(url=freebk_url(mini_app_url)))
         builder.button(text="🥊 Бокс: ближайшие бои", web_app=WebAppInfo(url=f"{mini_app_url}?view=boxing"))
         builder.button(text="📱 Все разделы", web_app=WebAppInfo(url=mini_app_url))
         builder.button(text="🥋 MMA и бокс", web_app=WebAppInfo(url=f"{mini_app_url}?view=sportstiles"))

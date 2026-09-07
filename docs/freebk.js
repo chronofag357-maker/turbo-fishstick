@@ -20,8 +20,15 @@ lineCaption.style.cssText='display:block;font-size:10px;font-weight:500;line-hei
 lineButton.append(lineHeading,lineCaption);
 lineButton.title='Коэффициенты разных букмекеров: выбор региона и источника линии';
 document.querySelector('.markets').style.height='auto';
-document.querySelector('.markets').style.flexWrap='wrap';
+document.querySelector('.markets').style.flexWrap='nowrap';
 document.querySelector('.markets').append(lineButton);
+const mobileToolbarStyle=document.createElement('style');
+mobileToolbarStyle.textContent=`
+  .markets{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr) minmax(0,1.45fr);gap:4px;padding:10px 12px;align-items:stretch}
+  .markets>.market{min-width:0;min-height:44px;padding:5px 3px;font-size:clamp(10px,2.9vw,12px);line-height:1.2;white-space:normal;overflow-wrap:anywhere}
+  .data-notice #refresh-data{display:inline;padding:0;margin:0 0 0 3px;font:inherit;line-height:inherit;vertical-align:baseline;white-space:nowrap}
+`;
+document.head.append(mobileToolbarStyle);
 const linePanel=document.createElement('div');
 linePanel.hidden=true;linePanel.style.cssText='padding:12px 20px;border-bottom:1px solid var(--line);display:grid;gap:8px;background:white';
 linePanel.innerHTML='<label>Регион <select id="line-region" aria-label="Регион линии"></select></label><label>Букмекер <select id="line-book" aria-label="Букмекер линии"></select></label><small>Переключение без запросов к источнику. Прочерк — у выбранной линии нет коэффициента. Авто отдаёт приоритет исходам с ничьей.</small>';

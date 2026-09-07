@@ -77,7 +77,7 @@ async def main() -> None:
 
     if settings.mini_app_url:
         await bot.set_chat_menu_button(
-            menu_button=MenuButtonWebApp(text="FreeBK", web_app=WebAppInfo(url=freebk_url(settings.mini_app_url)))
+            menu_button=MenuButtonWebApp(text="P2P Market", web_app=WebAppInfo(url=freebk_url(settings.mini_app_url)))
         )
     else:
         await bot.set_chat_menu_button(menu_button=MenuButtonDefault())

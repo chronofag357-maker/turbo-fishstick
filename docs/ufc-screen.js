@@ -23,7 +23,7 @@ document.head.append(transparentRefreshStyle);
 render=function(){originalFightRender();document.querySelectorAll('article.event').forEach(article=>{
 const e=events.find(e=>e.id===article.querySelector('[data-event]')?.dataset.event);if(!e)return;
 const dateHeader=article.querySelector('.event-head time');
-if(dateHeader){dateHeader.textContent=window.moscowFightHeader(e.startTime);dateHeader.title=e.date||'';if(e.startTime)dateHeader.setAttribute('datetime',e.startTime);}
+if(dateHeader){const timestamp=e.startTime?Date.parse(e.startTime):NaN;dateHeader.textContent=Number.isFinite(timestamp)?new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(timestamp)+' МСК':'Время уточняется';dateHeader.title=e.date||'';if(e.startTime)dateHeader.setAttribute('datetime',e.startTime);}
 if(market==='totals'){
 article.classList.add('totals-layout');
 article.querySelector('.event-head > span')?.remove();

@@ -29,17 +29,20 @@ window.oddsMovement = function(previous, next) {
     const e = events.find(e => e.id === opened);
     if (!e) {root.textContent='Бой отсутствует в последнем ответе. Линия недоступна.';return;}
     root.replaceChildren();
-    const line = text => {const p=document.createElement('p');p.textContent=text;root.append(p)};
+    const heading=document.createElement('div');heading.className='fight-sticky-heading';root.append(heading);
+    let lineTarget=heading;
+    const line = text => {const p=document.createElement('p');p.textContent=text;lineTarget.append(p)};
     line(e.title+' · '+e.date);
     if(e.cardInfo?.originalTitle&&e.cardInfo.originalTitle!==e.title)line(e.cardInfo.originalTitle);
     line(e.fighters.join(' — '));
     if(e.originalFighters&&e.originalFighters.join(' — ')!==e.fighters.join(' — '))line(e.originalFighters.join(' — '));
+    lineTarget=root;
     if(e.cardInfo){line(e.cardInfo.stage);const p=document.createElement('p'),a=document.createElement('a');a.href=e.cardInfo.source;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Источник турнира · проверен '+e.cardInfo.checked;p.append(a);root.append(p);line(e.cardInfo.note||'Место в карде может измениться. Справочник обновляется отдельно от коэффициентов.');if(e.cardInfo.stale)line('Последняя автоматическая проверка источника не удалась.');}
     if(e.metadataUnavailable)line('По дополнительному источнику бой отменён или требует проверки. Выбор исходов отключён.');
     if(e.unavailable)line('Обновление недоступно. Ниже — сохранённые значения, не текущая линия.');
     const group = (labels,values,kind) => {
       const row=document.createElement('div');row.className='fight-prices';
-      labels.forEach((label,i)=>{const cell=document.createElement('div');cell.className='fight-price';const title=document.createElement('small');title.textContent=label;const value=document.createElement('strong');value.textContent=fmt(values[i]);decorate(value,movements.get(e.id)?.[kind+i]);cell.append(title,value);row.append(cell)});root.append(row);
+      labels.forEach((label,i)=>{const cell=document.createElement('button');cell.type='button';cell.className='fight-price';cell.dataset.odd=e.id;cell.dataset.index=i;cell.dataset.couponMarket=kind;cell.disabled=!Number.isFinite(values[i])||values[i]<=1||kind==='totals'&&i===0||!!(e.unavailable||e.metadataUnavailable||e.cardInfo?.cancelled)||e.status==='finished';cell.setAttribute('aria-pressed',String(selected.has(e.id+kind+i)));const title=document.createElement('small');title.textContent=label;const value=document.createElement('strong');value.textContent=fmt(values[i]);decorate(value,movements.get(e.id)?.[kind+i]);cell.append(title,value);row.append(cell)});root.append(row);
     };
     group(['Победа 1','Ничья','Победа 2'],e.odds,'outcomes');line(e.priceNote);
     if(e.totals){line('Тотал '+e.totals.line+' раунда');group(['Раунды','Больше','Меньше'],[e.totals.line,e.totals.over,e.totals.under],'totals');line(e.totalNote)}
@@ -68,4 +71,7 @@ window.oddsMovement = function(previous, next) {
   const css=document.createElement('style');
   css.textContent='.odds-up{color:#147342!important;background:#e5f5ec!important}.odds-down{color:#bd2940!important;background:#fce9ec!important}.odds-arrow{display:block;font-size:10px;line-height:14px}.odds-stale{opacity:.45}.fight-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.fight-price{text-align:center;background:#f5f5f9;padding:10px 2px;border-radius:5px}.fight-price small{display:block;font-size:11px}.fight-price strong{display:block;font-size:21px;padding:8px 0}';
   document.head.append(css);
+  const stickyCss=document.createElement('style');
+  stickyCss.textContent='.fight-sticky-heading{position:sticky;top:0;z-index:2;background:#fff;padding:1px 0 6px;border-bottom:1px solid var(--line)}.fight-sticky-heading p{margin:6px 0;font-size:12px;line-height:1.3}';
+  document.head.append(stickyCss);
 })();
