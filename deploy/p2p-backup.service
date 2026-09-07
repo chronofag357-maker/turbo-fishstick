@@ -1,0 +1,8 @@
+[Unit]
+Description=P2P Market SQLite backup with integrity check
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/opt/freebk/app/.venv/bin/python /opt/freebk/app/deploy/backup_state.py

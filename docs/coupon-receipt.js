@@ -24,7 +24,7 @@
     .receipt-switch input:focus-visible+.receipt-switch-track{outline:2px solid #567A22;outline-offset:3px}
     @media(prefers-reduced-motion:reduce){.receipt-switch-track,.receipt-switch-track:after{transition:none}}
   `;document.head.append(acceptedCss);
-  function text(b){return ['P2P Market · Учебный купон принят','№ '+b.id,new Date(b.created).toLocaleString('ru-RU'),...b.picks.map(p=>p.fighters.join(' — ')+' | '+p.label+' | '+p.value.toFixed(2)), 'Ставка: '+money(b.stake),'Коэффициент: '+b.odds.toFixed(2),'Возможная выплата: '+money(b.payout),'Учебное пари, не реальные деньги. Результат не рассчитан.'].join('\n')}
+  function text(b){const status={won:'Выигрыш',lost:'Проигрыш',void:'Возврат',pending:'В игре'};return ['P2P Market · Учебный купон','№ '+b.id,new Date(b.created).toLocaleString('ru-RU'),...b.picks.map(p=>p.fighters.join(' — ')+' | '+p.label+' | '+p.value.toFixed(2)+' | '+(status[p.status]||'В ожидании')), 'Ставка: '+money(b.stake),'Коэффициент: '+b.odds.toFixed(2),b.status&&b.status!=='pending'?'Начислено: '+money(b.settledPayout??0):'Возможная выплата: '+money(b.payout),'Учебное пари, не реальные деньги. '+(status[b.status]||'В игре')].join('\n')}
   function dismiss(){receipt.hidden=true;current=null;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true})}
   const receiptMarkup=bet=>`<div class="receipt-heading"><span role="status">✓ Купон принят</span><button data-receipt-close aria-label="Закрыть уведомление">×</button></div><p class="receipt-meta">${bet.picks.length===1?'Ординар':'Экспресс'} · № ${escape(bet.id.slice(0,8))} · ${escape(new Date(bet.created).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}))}</p><div class="receipt-list">${bet.picks.map(p=>`<div class="receipt-pick"><strong><span>${escape(p.label)}</span><span>${p.value.toFixed(2)}</span></strong>${escape(p.fighters.join(' — '))}</div>`).join('')}</div><div class="receipt-totals"><span>Ставка</span><strong>${money(bet.stake)}</strong><span>Общий коэффициент</span><strong>${bet.odds.toFixed(2)}</strong><span>Возможная выплата</span><strong>${money(bet.payout)}</strong></div><div class="receipt-actions"><button data-receipt-download><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></svg>Скачать</button><button data-receipt-share><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11v9h14v-9M12 16V3M8 7l4-4 4 4"/></svg>Отправить</button><a data-receipt-email href="mailto:?subject=${encodeURIComponent('P2P Market — учебный купон '+bet.id.slice(0,8))}&body=${encodeURIComponent(text(bet))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 5l9 8 9-8"/></svg>Почта</a></div><p class="receipt-hint">Сохранён в «Мои пари» · учебный купон.<br>Нажмите на карточку, чтобы скрыть.</p><p class="receipt-status" role="status"></p>`;
   window.showDemoReceipt=bet=>{
@@ -82,7 +82,14 @@
     card.innerHTML=`<summary><span class="bet-card-title"><span>✓ ${bet.picks.length===1?'Ординар':'Экспресс'} · Принят</span><span class="bet-card-arrow" aria-hidden="true">›</span></span><strong class="bet-card-event">${escape(bet.picks[0]?.fighters.join(' — ')||'Купон')}${bet.picks.length>1?' · ещё '+(bet.picks.length-1):''}</strong><span class="bet-card-meta">${escape(new Date(bet.created).toLocaleString('ru-RU'))} · № ${escape(bet.id.slice(0,8))}</span><span class="bet-card-numbers"><span>Ставка<strong>${money(bet.stake)}</strong></span><span>Коэфф.<strong>${bet.odds.toFixed(2)}</strong></span><span>Выплата возможна<strong>${money(bet.payout)}</strong></span></span></summary><div class="bet-card-body">${receiptMarkup(bet)}</div>`;
     const body=card.querySelector('.bet-card-body');body.querySelector('.receipt-heading').remove();body.querySelector('.receipt-meta').remove();
     body.querySelector('.receipt-hint').remove();
-    const note=document.createElement('p');note.className='receipt-meta';note.textContent='Учебное пари · результат ещё не рассчитан.';body.append(note);
+    body.querySelectorAll('.receipt-pick').forEach((element,i)=>{
+      const p=bet.picks[i],state=p.status||'pending';element.dataset.result=state;
+      const label=document.createElement('small');label.className='pick-result';label.textContent={won:'Выигрыш',lost:'Проигрыш',void:'Отмена / возврат',pending:'В ожидании результата'}[state]||'В ожидании результата';element.append(label);
+    });
+    if(bet.status&&bet.status!=='pending'){
+      const totals=body.querySelector('.receipt-totals');totals.lastElementChild.textContent=money(bet.settledPayout??0);totals.lastElementChild.previousElementSibling.textContent='Начислено на баланс';
+    }
+    const note=document.createElement('p');note.className='receipt-meta';note.textContent=bet.status&&bet.status!=='pending'?'Учебное пари · рассчитано.':'Учебное пари · результат ещё не рассчитан.';body.append(note);
     body.addEventListener('click',e=>{void exportAction(e,bet,body)});
     return card;
   };

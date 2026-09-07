@@ -1,14 +1,7 @@
-"""Tiny read-only HTTP API the Mini App (docs/, static GitHub Pages) fetches
-live data from — GitHub Pages can't hold the RapidAPI key itself, so this
-runs next to the bot's polling loop and holds it instead.
+"""Public sports feeds plus same-origin authenticated play-money accounts.
 
-Wraps the same `sports_data` used by the Telegram bot handlers (see
-bot/services/registry.py), so a sport shows real data here exactly when it
-does in the chat — nothing sport-specific lives in this module.
-
-CORS is wide open (GET-only, no cookies/auth involved): this only ever
-returns the same public schedule data the Mini App already ships as a
-demo/fallback copy, so there's nothing here worth restricting the origin for.
+Wildcard CORS applies only to public data. Private routes validate Telegram
+identity/server sessions, enforce admin rights and always return no-store.
 """
 
 import logging
@@ -37,13 +30,15 @@ def _event_to_json(event) -> dict:
 
 @web.middleware
 async def cors_middleware(request: web.Request, handler):
+    if request.path.startswith('/api/private/'):
+        return await handler(request)
     if request.method == "OPTIONS":
         response = web.Response()
     else:
         response = await handler(request)
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-    response.headers["Cache-Control"] = "public, max-age=120"
+    response.headers["Cache-Control"] = "no-store" if request.path == '/api/odds' else "public, max-age=120"
     return response
 
 
@@ -65,7 +60,8 @@ async def odds(request: web.Request) -> web.Response:
     if sport not in SPORTS:
         return web.json_response({'error': 'Unknown sport'}, status=400)
     event_id = request.query.get('eventId')
-    result = await get_feed(sport, force=request.query.get('refresh') == '1' and bool(event_id), event_id=event_id)
+    # Public refresh must not bypass the owner's global quota/interval policy.
+    result = await get_feed(sport, force=False, event_id=event_id)
     if sport == 'mma' and result.get('events'):
         from bot.services.tournament_metadata import enrich
         result = {**result, 'events': await enrich(result['events'])}
@@ -84,7 +80,9 @@ async def index(request: web.Request) -> web.Response:
 
 
 def create_app() -> web.Application:
-    app = web.Application(middlewares=[cors_middleware])
+    from bot.web.miniapp import install, private_middleware
+    app = web.Application(middlewares=[cors_middleware, private_middleware], client_max_size=32768)
+    install(app)
     app.router.add_get("/api/health", health)
     app.router.add_get("/api/odds", odds)
     app.router.add_get("/api/events", get_events)

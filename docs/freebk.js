@@ -108,6 +108,7 @@ for(const r of results)if(!r.error)raw=raw.filter(e=>e.feedSport!==r.sport).conc
 updateBookOptions();renderLines();
 }
 if(results.some(r=>r.data?.manual_throttled)){status.textContent='Повторное обновление доступно через минуту после предыдущего запроса.';return;}
+if(eventId&&results.some(r=>r.data?.served_from_cache)){status.textContent='Показана последняя серверная линия. Новый опрос — по интервалу администратора.';notifyRefresh('Использован общий кэш: дополнительный запрос поставщику не отправлялся.');return;}
 if(eventId){const updated=current.find(e=>e.id===eventId);status.textContent='Линия выбранного боя проверена. Остальные бои не обновлялись.';notifyRefresh(!updated||(!updated.odds.some(Number.isFinite)&&!updated.totals)?'Поставщик ответил. Для выбранной линии коэффициенты не опубликованы.':before===priceSnapshot(updated)?'Поставщик ответил: коэффициенты выбранной линии не изменились.':'Обновлено: коэффициенты или источник выбранной линии изменились.');return;}
 status.replaceChildren();
 results.forEach((r,i)=>{

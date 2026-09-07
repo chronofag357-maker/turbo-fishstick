@@ -24,7 +24,7 @@ window.startVisibleFeed = function(load, interval=60000) {
     controller=new AbortController();
     try {await load(controller.signal);} finally {
       controller=null;
-      if(active())timer=setTimeout(tick,resumePending?0:interval);
+      if(active())timer=setTimeout(tick,resumePending?0:(window.ServerAccount?.enabled?Math.min(interval,40000):interval));
       resumePending=false;
     }
   }

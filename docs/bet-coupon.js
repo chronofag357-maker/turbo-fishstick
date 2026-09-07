@@ -5,7 +5,7 @@
   const money=n=>n.toLocaleString('ru-RU',{maximumFractionDigits:2});
   const account=()=>freebkDemoSignedIn?freebkDemoPartner:null;
   const read=()=>{try{return JSON.parse(localStorage.getItem(storageKey)||'{}')}catch{return {}}};
-  const wallet=name=>{const data=read();return data[name]||{balance:456000,bets:[]}};
+  const wallet=name=>{if(window.ServerAccount?.enabled)return window.ServerAccount.current||{balance:0,bets:[]};const data=read();return data[name]||{balance:456000,bets:[]}};
   window.DemoWallet={balance:name=>wallet(name).balance};
   const root=document.createElement('section');root.id='bet-coupon';root.setAttribute('aria-label','Купон');root.hidden=true;document.querySelector('.app').append(root);
   const style=document.createElement('style');style.textContent=`
@@ -125,20 +125,46 @@
   const baseRender=render;
   render=function(){sync();baseRender();draw()};
   function toggle(id,kind,index){
+    if(submitting)return;
     const p=snapshot(events.find(e=>e.id===id),kind,index);if(!p)return;
     const old=picks.get(id);
+    window.ServerAccount?.track(old&&old.kind===kind&&old.index===index?'remove':'select',{event:id,market:kind,index});
     if(old&&old.kind===kind&&old.index===index)picks.delete(id);else picks.set(id,p);
     notice='';if(picks.size===1&&!old)expanded=true;
     render();
   }
   function history(){
+    window.ServerAccount?.track('open_history');
     historyOpen=true;
     if(document.querySelector('#panel').open)document.querySelector('#panel').close();
     window.BetHistory.show(account(),account()?wallet(account()):null);
   }
-  function place(){
+  let submitting=false, requestKey=null, requestBody=null;
+  async function place(){
+    if(submitting)return;
     if(!picks.size)return;
     const issue=validity();if(issue){notice=issue;draw();return;}
+    if(window.ServerAccount?.enabled){
+      const body={stake:amount(),picks:[...picks.values()].map(p=>({id:p.id,sport:p.sport,kind:p.kind,index:p.index,value:p.value,line:p.line,sourceKey:p.sourceKey}))};
+      const signature=JSON.stringify(body);
+      const pendingKey='p2p-pending-submission:'+account();
+      if(signature!==requestBody){
+        let saved=null;try{saved=JSON.parse(sessionStorage.getItem(pendingKey)||'null')}catch{}
+        requestBody=signature;requestKey=saved?.body===signature?saved.key:crypto.randomUUID();
+      }
+      submitting=true;
+      root.querySelectorAll('button,input').forEach(e=>e.disabled=true);
+      try{
+        sessionStorage.setItem(pendingKey,JSON.stringify({body:signature,key:requestKey}));
+        const bet=await window.ServerAccount.api('bets',{...body,key:requestKey});
+        sessionStorage.removeItem(pendingKey);
+        picks.clear();stake='';notice='';expanded=false;requestKey=null;requestBody=null;
+        render();window.showDemoReceipt(bet);
+        await window.ServerAccount.refresh().catch(()=>{});
+      }catch(error){notice=error.message||'Нет подтверждения сервера. Повторите запрос: двойного списания не будет.';draw();}
+      finally{submitting=false;draw();}
+      return;
+    }
     const name=account(),data=read(),w=wallet(name),cents=amount();
     const bet={id:crypto.randomUUID(),created:new Date().toISOString(),stake:cents/100,odds:total(),payout:Math.round(cents*total())/100,picks:[...picks.values()].map(p=>({...p}))};
     data[name]={balance:(Math.round(w.balance*100)-cents)/100,bets:[bet,...w.bets]};
@@ -190,6 +216,7 @@
     if(b.dataset.action==='profile'){e.preventDefault();e.stopImmediatePropagation();panel('Меню',window.freebkMenuContent());}
   },true);
   window.addEventListener('freebk-account-change',()=>{picks.clear();stake='';notice='';render();if(window.BetHistory.visible)window.BetHistory.show(account(),account()?wallet(account()):null)});
+  window.addEventListener('p2p-wallet-update',()=>{summary();if(window.BetHistory.visible)window.BetHistory.show(account(),account()?wallet(account()):null)});
   window.addEventListener('storage',e=>{if(e.key===storageKey||e.key?.startsWith('freebk-demo-favourites:')){draw();if(window.BetHistory.visible)history()}});
   draw();
 })();

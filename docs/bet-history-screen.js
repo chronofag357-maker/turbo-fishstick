@@ -33,6 +33,16 @@
     #bet-history-screen .history-tabs .history-icon{width:30px}
     @media(max-width:350px){#bet-history-screen .history-tabs button{font-size:13px}#bet-history-screen .history-tabs .history-icon{width:26px}}
   `;document.head.append(navCss);
+  const resultCss=document.createElement('style');resultCss.textContent=`
+    .receipt-pick[data-result=won]{background:#edf8f0;border-left:3px solid #70BD8B;color:#257243;padding-left:8px}
+    .receipt-pick[data-result=lost]{background:#E6F0CD;border-left:3px solid #A3C85A;color:#567A22;padding-left:8px}
+    .receipt-pick[data-result=void]{background:#f4f4f7;border-left:3px solid #9b9db2;padding-left:8px}
+    .pick-result{display:block;font-weight:700;margin-top:5px}
+    .history-list [data-state=won] .history-schedule{background:#edf8f0;color:#257243}
+    .history-list .bet-record[data-state=won] .bet-card-title,.history-list [data-state=won] .bet-card-numbers{color:#257243}
+    .history-list [data-state=lost] .history-schedule{background:#E6F0CD;color:#567A22}
+    .history-list .bet-record[data-state=lost] .bet-card-title{color:#567A22}
+  `;document.head.append(resultCss);
   function state(b){return ['won','lost','void'].includes(b.status)?b.status:'pending'}
   const saleAvailable=b=>state(b)==='pending'&&Number.isFinite(b.cashoutOffer)&&b.cashoutOffer>0;
   const matches=b=>filter==='all'||filter==='sale'&&saleAvailable(b)||filter==='settled'&&state(b)!=='pending'||state(b)===filter;
