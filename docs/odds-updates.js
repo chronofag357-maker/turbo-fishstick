@@ -1,7 +1,8 @@
 // Compare only identical fighters, bookmakers and total lines.
 window.oddsMovement = function(previous, next) {
   const result = {};
-  if (!previous || previous.unavailable || next.unavailable || previous.fighters.join('|') !== next.fighters.join('|')) return result;
+  // An old cached quote is a valid comparison baseline, not a current price.
+  if (!previous || next.unavailable || previous.fighters.join('|') !== next.fighters.join('|')) return result;
   const compare = (key, a, b) => {
     if (Number.isFinite(a) && Number.isFinite(b)) {
       const delta = Math.round((b-a)*10000)/10000;
@@ -21,6 +22,7 @@ window.oddsMovement = function(previous, next) {
   const decorate = (button, change) => {
     if (!change) return;
     button.classList.add('odds-'+change.direction);
+    button.classList.add('odds-with-change');
     button.title = 'Было '+fmt(change.from)+' → '+fmt(change.to);
     const arrow = document.createElement('small');
     const amount=Math.abs(change.delta).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:4});
@@ -28,9 +30,9 @@ window.oddsMovement = function(previous, next) {
     // Symbolic direction icon, not an invented price-history chart.
     const trend=document.createElementNS('http://www.w3.org/2000/svg','svg');
     trend.setAttribute('viewBox','0 0 24 16');
-    trend.setAttribute('width','22');trend.setAttribute('height','15');
+    trend.setAttribute('width','14');trend.setAttribute('height','12');
     trend.setAttribute('aria-hidden','true');
-    trend.style.cssText='vertical-align:middle;margin-right:4px';
+    trend.style.cssText='vertical-align:middle;flex-shrink:0';
     const path=document.createElementNS(trend.namespaceURI,'path');
     path.setAttribute('d',change.direction==='up'?'M2 13L7 8L11 11L17 5L22 2':'M2 2L7 7L11 4L17 10L22 13');
     path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');
@@ -88,6 +90,9 @@ window.oddsMovement = function(previous, next) {
   const css=document.createElement('style');
   css.textContent='.odds-up{color:#257243!important;background:#edf8f0!important}.odds-down{color:#567A22!important;background:#E6F0CD!important}.odds-arrow{display:block;font-size:10px;line-height:14px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.odds-stale{opacity:.45}.fight-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.fight-price{text-align:center;background:#f5f5f9;padding:10px 2px;border-radius:5px}.fight-price small{display:block;font-size:11px}.fight-price strong{display:block;font-size:21px;padding:8px 0}';
   document.head.append(css);
+  const deltaStyle=document.createElement('style');
+  deltaStyle.textContent='.odd.odds-with-change,.fight-price strong.odds-with-change{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap}.odds-with-change .odds-arrow{display:inline-flex;align-items:center;gap:2px;font-size:9px;line-height:12px}.odd.odds-with-change{font-size:14px}';
+  document.head.append(deltaStyle);
   const stickyCss=document.createElement('style');
   stickyCss.textContent='.fight-sticky-heading{position:sticky;top:0;z-index:2;background:#fff;padding:1px 0 6px;border-bottom:1px solid var(--line)}.fight-sticky-heading p{margin:6px 0;font-size:12px;line-height:1.3}';
   document.head.append(stickyCss);

@@ -15,7 +15,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
   await page.addScriptTag({path:'docs/odds-updates.js'});
   await page.evaluate(()=>{
    const e={id:'test',fighters:['Боец А','Боец Б'],priceKey:'book',odds:[2,null,3],title:'Тестовая линия',date:'',priceNote:'Тест без поставщика'};
-   FightScreen.setEvents([e]);FightScreen.setEvents([{...e,odds:[2.15,null,2.9]}]);
+   FightScreen.setEvents([{...e,unavailable:true}]);FightScreen.setEvents([{...e,odds:[2.15,null,2.9]}]);
   });
   assert.deepEqual(await page.locator('.odds-arrow').allTextContents(),['+0,15','−0,10']);
   assert.equal(await page.locator('.odds-arrow svg').count(),2);

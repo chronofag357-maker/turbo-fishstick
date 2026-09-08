@@ -16,5 +16,6 @@ assert.equal(Object.keys(compare(null,b)).length,0);
 assert.equal(compare(a,{...b,priceKey:'different'}).outcomes0,undefined);
 assert.equal(compare(a,{...b,totals:{...b.totals,line:3.5}}).totals1,undefined);
 assert.equal(Object.keys(compare(a,{...b,unavailable:true})).length,0);
+assert.equal(compare({...a,unavailable:true},b).outcomes0.delta,.2);
 assert.equal(Object.keys(compare(a,{...b,fighters:['B','A']})).length,0);
 console.log('PASS: rises, falls, unchanged, initial load, bookmaker/line changes, stale data, fighter order');
