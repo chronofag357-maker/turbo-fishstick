@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     boxing_data_api_key: str = ""
     odds_api_key: str = ""
     mini_app_api_port: int = 8080
+    # Disabled until the private media service is provisioned and verified.
+    livekit_enabled: bool = False
+    livekit_url: str = ""
+    livekit_api_key: str = ""
+    livekit_api_secret: str = ""
+    livekit_room: str = "p2p-partners"
+    livekit_participant_ids: str = ""
     # HTTP(S) proxy for outbound requests (Telegram, Boxing Data API) — needed
     # when a system-wide VPN/proxy client (e.g. V2Ray, Clash) handles your
     # regular internet access but Python's aiohttp doesn't see it on its own.

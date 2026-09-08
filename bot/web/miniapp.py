@@ -102,6 +102,17 @@ async def logout(request):
     return web.json_response({'ok': True})
 
 
+async def stream_token(request):
+    from bot.services.stream_access import connection_details, StreamUnavailable
+    data = await object_body(request)
+    if data.get('consent') is not True:
+        raise ValueError('Подтвердите подключение камеры и микрофона.')
+    try:
+        return web.json_response(connection_details(request['identity'], settings))
+    except StreamUnavailable as exc:
+        return web.json_response({'error': str(exc)}, status=503)
+
+
 def verified_pick(p, feed, now):
     event = next((e for e in feed.get('events', []) if e['id'] == p['id']), None)
     if feed.get('error') or not event or event.get('line_invalid') or event.get('line_stale', feed.get('stale', False)):
@@ -267,6 +278,7 @@ def install(app):
     app.on_startup.append(startup)
     app.cleanup_ctx.append(scheduler)
     for method, path, handler in [('POST', 'login', login), ('GET', 'me', me), ('POST', 'logout', logout),
+            ('POST', 'stream/token', stream_token),
             ('POST', 'bets', place), ('POST', 'actions', action), ('POST', 'refresh', refresh_event), ('GET', 'admin/report', report),
             ('POST', 'admin/allow', allow), ('POST', 'admin/result', result), ('POST', 'admin/policy', policy)]:
         app.router.add_route(method, '/api/private/'+path, handler)

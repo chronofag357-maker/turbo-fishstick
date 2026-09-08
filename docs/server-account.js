@@ -26,7 +26,7 @@
   if(!enabled)return;
   window.freebkMenuContent=()=>{
     const stats=current?.stats;
-    return `<div class="account-menu"><div class="menu-account-row ${current?'is-signed-in':''}"><div class="menu-avatar-block"><div class="menu-avatar is-partner"><svg viewBox="0 0 32 32"><circle cx="16" cy="10" r="6"/><path d="M5 30c0-14 22-14 22 0"/></svg></div><strong>${escape(current?.name||'Профиль')}</strong><small>${current?'Партнер':'Гость'}</small></div>${current?'<button class="menu-logout" data-server-logout>Выйти</button>':`<div class="menu-auth"><p>Вход через ваш аккаунт Telegram</p><label><input type="checkbox" data-server-consent style="width:22px;height:22px">Согласен на журнал действий в приложении для отчётов администратора. Поля ввода не записываются.</label><button data-server-login>Войти через Telegram</button></div>`}</div><div class="menu-balance"><div><small>Баланс</small><strong>${money(current?.balance)}</strong></div></div>${stats?`<div class="server-stats"><span>В игре <b>${money(stats.inPlay)}</b></span><span>Поставлено <b>${money(stats.placed)}</b></span><span>Выплачено <b>${money(stats.paid)}</b></span><span>Плюс / минус <b>${money(stats.profit)}</b></span></div><button data-server-ledger>История операций</button>`:''}<div class="menu-shortcuts"><button data-action="top">Топ</button><button data-action="menu-live">Live</button><button data-action="menu-prematch">Прематч</button></div><div class="menu-links"><button data-action="games">Игры 24/7 ›</button><button data-action="results">Результаты ›</button><button data-action="broadcasts">Трансляции ›</button>${current?.admin?'<button data-server-admin>Панель администратора ›</button>':''}</div><p class="menu-demo-message" role="status"></p></div>`;
+    return `<div class="account-menu"><div class="menu-account-row ${current?'is-signed-in':''}"><div class="menu-avatar-block"><div class="menu-avatar is-partner"><svg viewBox="0 0 32 32"><circle cx="16" cy="10" r="6"/><path d="M5 30c0-14 22-14 22 0"/></svg></div><strong>${escape(current?.name||'Профиль')}</strong><small>${current?'Партнер':'Гость'}</small></div>${current?'':`<div class="menu-auth"><p>Вход через ваш аккаунт Telegram</p><label><input type="checkbox" data-server-consent style="width:22px;height:22px">Согласен на журнал действий в приложении для отчётов администратора. Поля ввода не записываются.</label><button data-server-login>Войти через Telegram</button></div>`}</div><div class="menu-balance"><div><small>Баланс</small><strong>${money(current?.balance)}</strong></div></div>${stats?`<div class="server-stats"><span>В игре <b>${money(stats.inPlay)}</b></span><span>Поставлено <b>${money(stats.placed)}</b></span><span>Выплачено <b>${money(stats.paid)}</b></span><span>Плюс / минус <b>${money(stats.profit)}</b></span></div><button data-server-ledger>История операций</button>`:''}<div class="menu-shortcuts"><button data-action="top">Топ</button><button data-action="menu-live">Live</button><button data-action="menu-prematch">Прематч</button></div><div class="menu-links"><button data-action="games">Игры 24/7 ›</button><button data-action="results">Результаты ›</button><button data-action="broadcasts">Трансляции ›</button>${current?.admin?'<button data-server-admin>Панель администратора ›</button>':''}</div>${current?'<button class="menu-logout" data-server-logout>Выход из аккаунта</button>':''}<p class="menu-demo-message" role="status"></p></div>`;
   };
   const css=document.createElement('style');css.textContent=`
     .server-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0;font-size:11px}.server-stats b{display:block;font-size:14px}
@@ -83,11 +83,15 @@
       busy=true;button.disabled=true;
       if(button.hasAttribute('data-server-logout')){await api('logout',{});token='';sessionStorage.removeItem('p2p-session');current=null;freebkDemoSignedIn=false;freebkDemoPartner='';}
       else{
-        if(!document.querySelector('[data-server-consent]')?.checked)throw new Error('Подтвердите согласие на журнал действий.');
+        const consentBox=document.querySelector('[data-server-consent]');
+        if(consentBox&&!consentBox.checked)throw new Error('Подтвердите согласие на журнал действий.');
+        if(!consentBox&&!confirm('Разрешить журнал действий в приложении для отчётов администратора? Поля ввода не записываются.'))return;
         const initData=window.Telegram?.WebApp?.initData;
         if(!initData)throw new Error('Откройте приложение кнопкой бота в Telegram.');
+        const status=document.querySelector('.menu-demo-message');if(status)status.textContent='Проверяем Telegram ID…';
         token=(await api('login',{initData,consent:true})).token;sessionStorage.setItem('p2p-session',token);await refresh();
       }
+      if(!current&&dialog.open)dialog.close();
       window.dispatchEvent(new Event('freebk-account-change'));repaint();
     }catch(error){const msg=document.querySelector('.menu-demo-message');if(msg)msg.textContent=error.message;}finally{busy=false;button.disabled=false;}
   },true);

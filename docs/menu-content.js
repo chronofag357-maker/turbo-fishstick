@@ -8,19 +8,8 @@ window.freebkMenuContent = () => `
     <div class="menu-account-row ${freebkDemoSignedIn ? 'is-signed-in' : ''}">
       <div class="menu-avatar-block">
         <div class="menu-avatar ${freebkDemoSignedIn ? 'is-partner' : ''}" aria-label="${freebkDemoSignedIn ? 'Аватар партнера' : 'Место для фотографии профиля'}"><svg viewBox="0 0 32 32" aria-hidden="true">${freebkDemoSignedIn ? '<path d="M4 30c0-13 24-13 24 0" fill="#397eae" stroke="none"/><circle cx="16" cy="12" r="7" fill="#efd2b7" stroke="none"/><path d="M9 12V9c0-9 15-9 14 2l-4-4-10 5" fill="#29375f" stroke="none"/>' : '<circle cx="16" cy="11" r="5"/><path d="M6 28v-3c0-10 20-10 20 0v3"/>'}</svg></div>
-        <strong>${freebkDemoSignedIn ? freebkDemoPartner : 'Профиль'}</strong><small>${freebkDemoSignedIn ? 'Партнер' : 'Гость'}</small>
+        <strong>${window.localPreviewProfile?.name||(freebkDemoSignedIn ? freebkDemoPartner : 'Профиль')}</strong><small>Партнёр</small>
       </div>
-      ${freebkDemoSignedIn ? '<button type="button" class="menu-logout" data-menu-demo="logout">Выйти</button>' : `<div class="menu-auth">
-        <section class="menu-login" aria-label="Вход по почте — макет">
-          <strong>Вход</strong>
-          <label>Почта<input data-demo-partner type="text" placeholder="E-mail" autocomplete="off" autocapitalize="words" spellcheck="false"></label>
-          <div class="menu-password-field"><label for="menu-password">Пароль</label><div class="menu-password-wrap"><input id="menu-password" data-demo-surname type="password" placeholder="Пароль" autocomplete="off" spellcheck="false"><button type="button" class="menu-password-eye" aria-label="Показать пароль на 3 секунды" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-        </section>
-        <section class="menu-telegram" aria-label="Вход через Telegram — макет">
-          <label>Telegram<input type="text" placeholder="@nickname" autocomplete="off" autocapitalize="none" spellcheck="false"></label>
-          <button type="button" data-menu-demo="telegram">Войти ↗</button>
-        </section>
-      </div>`}
     </div>
     <div class="menu-balance"><div><small>Баланс</small><strong>${freebkDemoSignedIn ? (window.DemoWallet?.balance(freebkDemoPartner) ?? 456000).toLocaleString('ru-RU') : '0'}</strong></div><button type="button" data-menu-demo="balance" aria-label="Пополнение — пока недоступно">+</button></div>
     <div class="menu-shortcuts" aria-label="Разделы боёв">
@@ -33,14 +22,30 @@ window.freebkMenuContent = () => `
       <button type="button" data-menu-demo="contact">Контактный центр <span aria-hidden="true">›</span></button>
     </div>
     <p class="menu-demo-message" role="status" aria-live="polite"></p>
+    ${freebkDemoSignedIn ? '<button type="button" class="menu-logout" data-menu-demo="logout">Выход из аккаунта</button>' : ''}
   </div>`;
 (() => {
   const style=document.createElement('style');
   style.textContent=`
     #panel.hamburger-sheet{height:82vh;height:max(82dvh,calc(100dvh - 140px),580px);max-height:calc(100dvh - env(safe-area-inset-top) - 12px);padding-left:14px;padding-right:14px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+    #panel.hamburger-sheet:not(.welcome-auth){height:var(--profile-sheet-height,calc(100dvh - 206px));max-height:var(--profile-sheet-height,calc(100dvh - 206px))}
+    #panel.hamburger-sheet:not(.welcome-auth)>.close{position:absolute;top:0;right:0;width:40px;height:40px;min-width:40px;min-height:40px;padding:0;display:grid;place-items:center;border:1px solid #677454;border-radius:50%;background:#252923;color:#c2d99a;font:300 25px/40px Arial;box-shadow:none;z-index:3}
+    #panel.hamburger-sheet:not(.welcome-auth)>.close:hover{background:#343c2b;color:#e6f0cd}
+    #panel.hamburger-sheet:not(.welcome-auth)>.close:focus-visible{outline:0;box-shadow:inset 0 0 0 2px #a3c85a}
     #panel.hamburger-sheet #panel-title{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%)}
     #panel.hamburger-sheet #panel-body{height:100%;max-height:100%;overflow:auto}
     .account-menu{font-size:12px;color:var(--ink)}
+    #panel:not(.welcome-auth) .account-menu{display:grid;grid-template-columns:74px minmax(0,1fr);gap:12px;align-items:center}
+    #panel:not(.welcome-auth) .account-menu> *{grid-column:1/-1;min-width:0}
+    #panel:not(.welcome-auth) .account-menu>.menu-account-row{grid-column:1;grid-row:1;display:flex;flex-direction:column;min-height:0;margin:0;gap:6px;position:relative}
+    #panel:not(.welcome-auth) .menu-account-row .menu-avatar-block{width:74px;min-width:0;overflow-wrap:anywhere}
+    #panel:not(.welcome-auth) .menu-avatar-block small{color:#567A22;font-weight:700}
+    #panel:not(.welcome-auth) .account-menu>.menu-balance{grid-column:2;grid-row:1;align-self:start;height:64px;margin:0;padding:10px;gap:6px}
+    #panel:not(.welcome-auth) .account-menu>.menu-logout{position:static;justify-self:start;width:74px;min-width:0;min-height:44px;padding:4px;font-size:10px}
+    #panel:not(.welcome-auth) .menu-balance strong{font-size:20px;overflow-wrap:anywhere}
+    #panel:not(.welcome-auth) .menu-balance button{flex:none}
+    #panel:not(.welcome-auth) .menu-account-row .menu-logout{position:static;min-width:0;padding:4px;font-size:10px}
+    #panel:not(.welcome-auth) .account-menu>.menu-shortcuts{margin:0}
     .menu-account-row{display:grid;grid-template-columns:74px minmax(0,1fr);gap:14px;align-items:center;margin-bottom:12px}
     .menu-account-row.is-signed-in{position:relative;display:flex;justify-content:center;min-height:140px}
     .is-signed-in .menu-avatar-block{width:calc(100% - 150px);min-width:0;overflow-wrap:anywhere}
@@ -103,7 +108,7 @@ window.freebkMenuContent = () => `
     if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
       avatar.animate([{transform:`translate(${oldRect.x-newRect.x}px,${oldRect.y-newRect.y}px)`},{transform:'translate(0,0)'}],{duration:380,easing:'cubic-bezier(.16,1,.3,1)'});
     }
-    document.querySelector(freebkDemoSignedIn ? '.menu-logout' : '[data-demo-partner]').focus({preventScroll:true});
+    document.querySelector(freebkDemoSignedIn ? '.menu-logout' : '#panel .close')?.focus({preventScroll:true});
   }
   document.addEventListener('click',e=>{
     const eye=e.target.closest('.menu-password-eye');
@@ -119,7 +124,7 @@ window.freebkMenuContent = () => `
     if(button.dataset.menuDemo==='logout'){
       hidePassword();freebkDemoSignedIn=false;freebkDemoPartner='';
       window.dispatchEvent(new Event('freebk-account-change'));
-      renderAccountTransition();
+      document.querySelector('#panel').close();
       return;
     }
     if(button.dataset.menuDemo==='telegram'){

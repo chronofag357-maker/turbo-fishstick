@@ -4,6 +4,10 @@
   let expanded=false, stake='', notice='', historyOpen=false, settingsOpen=false;
   const money=n=>n.toLocaleString('ru-RU',{maximumFractionDigits:2});
   const account=()=>freebkDemoSignedIn?freebkDemoPartner:null;
+  const draftOwner=()=>window.ServerAccount?.enabled?(window.ServerAccount.current?.id?'telegram:'+window.ServerAccount.current.id:null):(account()?'local:'+account():null);
+  let activeDraft=null;
+  function saveDraft(){if(!activeDraft)return;try{localStorage.setItem('p2p-coupon-draft:'+activeDraft,JSON.stringify({picks:[...picks],stake,expanded,settingsOpen}));}catch{notice='Не удалось сохранить черновик на устройстве.';}}
+  function restoreDraft(){picks.clear();stake='';expanded=false;settingsOpen=false;activeDraft=draftOwner();if(!activeDraft)return;try{const d=JSON.parse(localStorage.getItem('p2p-coupon-draft:'+activeDraft)||'null');if(d&&Array.isArray(d.picks)){for(const item of d.picks){if(Array.isArray(item)&&item.length===2&&item[1]&&Array.isArray(item[1].fighters))picks.set(item[0],item[1]);}stake=typeof d.stake==='string'?d.stake:'';expanded=!!d.expanded;settingsOpen=!!d.settingsOpen;}}catch{notice='Не удалось восстановить черновик.';}}
   const read=()=>{try{return JSON.parse(localStorage.getItem(storageKey)||'{}')}catch{return {}}};
   const wallet=name=>{if(window.ServerAccount?.enabled)return window.ServerAccount.current||{balance:0,bets:[]};const data=read();return data[name]||{balance:456000,bets:[]}};
   window.DemoWallet={balance:name=>wallet(name).balance};
@@ -93,6 +97,7 @@
     return '';
   }
   function summary(){
+    saveDraft();
     const payout=root.querySelector('[data-payout]'),button=root.querySelector('.coupon-place');
     const hasStake=!!stake.trim(),input=root.querySelector('[data-coupon-stake]');
     if(payout){payout.textContent=money(Math.round(amount()*total())/100);payout.hidden=!hasStake;payout.previousElementSibling.hidden=!hasStake;}
@@ -102,6 +107,7 @@
     root.querySelector('.coupon-entry')?.classList.toggle('has-error',!!stake&&!!validity());
   }
   function draw(){
+    saveDraft();
     const wasHidden=root.hidden;
     const oldTop=wasHidden?0:root.getBoundingClientRect().top;
     root.getAnimations().forEach(animation=>animation.cancel());
@@ -215,8 +221,10 @@
     if(b.dataset.action==='bets'){e.preventDefault();e.stopImmediatePropagation();history();return;}
     if(b.dataset.action==='profile'){e.preventDefault();e.stopImmediatePropagation();panel('Меню',window.freebkMenuContent());}
   },true);
-  window.addEventListener('freebk-account-change',()=>{picks.clear();stake='';notice='';render();if(window.BetHistory.visible)window.BetHistory.show(account(),account()?wallet(account()):null)});
+  window.addEventListener('freebk-account-change',()=>{saveDraft();notice='';restoreDraft();render();if(window.BetHistory.visible)window.BetHistory.show(account(),account()?wallet(account()):null)});
+  window.addEventListener('pagehide',saveDraft);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)saveDraft();});
   window.addEventListener('p2p-wallet-update',()=>{summary();if(window.BetHistory.visible)window.BetHistory.show(account(),account()?wallet(account()):null)});
   window.addEventListener('storage',e=>{if(e.key===storageKey||e.key?.startsWith('freebk-demo-favourites:')){draw();if(window.BetHistory.visible)history()}});
-  draw();
+  restoreDraft();draw();
 })();

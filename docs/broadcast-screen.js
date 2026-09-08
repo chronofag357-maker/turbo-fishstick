@@ -91,6 +91,11 @@
     frame.allow='autoplay; fullscreen; picture-in-picture; camera; microphone; display-capture';frame.allowFullscreen=true;
     frame.addEventListener('load',()=>{
       const doc=frame.contentDocument;if(!doc)return;
+      doc.addEventListener('click',e=>{
+        if(e.target.closest('#stream-tab')&&window.PartnerRoom){
+          e.preventDefault();e.stopImmediatePropagation();close();window.PartnerRoom.open();
+        }
+      },true);
       doc.querySelector('.back')?.addEventListener('click',e=>{e.preventDefault();close()});
       doc.addEventListener('keydown',e=>{
         if(e.key==='Escape'&&!e.defaultPrevented&&!doc.body.classList.contains('is-expanded')){e.preventDefault();close()}

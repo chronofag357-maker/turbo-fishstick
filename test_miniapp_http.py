@@ -27,6 +27,7 @@ class PrivateAPITests(unittest.IsolatedAsyncioTestCase):
         app.router.add_post('/api/private/admin/result', miniapp.result)
         app.router.add_post('/api/private/bets', miniapp.place)
         app.router.add_post('/api/private/refresh', miniapp.refresh_event)
+        app.router.add_post('/api/private/stream/token', miniapp.stream_token)
         self.client = TestClient(TestServer(app))
         await self.client.start_server()
 
@@ -38,6 +39,16 @@ class PrivateAPITests(unittest.IsolatedAsyncioTestCase):
 
     def headers(self, token):
         return {'Authorization': 'Bearer '+token}
+
+    async def test_stream_access_requires_session_and_consent(self):
+        response = await self.client.post('/api/private/stream/token', json={'consent': True})
+        self.assertEqual(response.status, 403)
+        response = await self.client.post('/api/private/stream/token', json={}, headers=self.headers(self.owner))
+        self.assertEqual(response.status, 400)
+        with patch.object(miniapp.settings, 'livekit_enabled', False):
+            response = await self.client.post('/api/private/stream/token', json={'consent': True}, headers=self.headers(self.owner))
+        self.assertEqual(response.status, 503)
+        self.assertEqual(response.headers['Cache-Control'], 'no-store')
 
     async def test_access_controls_no_cache(self):
         r = await self.client.get('/api/private/me')
