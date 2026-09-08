@@ -14,7 +14,16 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
    if(!file.startsWith(path.join(process.cwd(),'docs')+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return r.fulfill({status:503,body:'{}'});
    const ext=path.extname(file);return r.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml'})[ext]||'application/octet-stream'});
   });
+  if(width===320)await page.addInitScript(()=>{
+   localStorage.setItem('p2p-welcome-blur-preview','10');
+   localStorage.setItem('p2p-welcome-tint-preview','20');
+   localStorage.setItem('p2p-welcome-ray-length','180');
+  });
   await page.goto('http://127.0.0.1/mini-app.html');
+  assert.deepEqual(await page.locator('#welcome-gate').evaluate(el=>({
+   blur:el.style.backdropFilter,tint:el.style.getPropertyValue('--welcome-tint'),
+   length:el.style.getPropertyValue('--ray-length')
+  })),{blur:'blur(0.7px)',tint:'0.9',length:'30%'});
   await page.waitForTimeout(1200);
   await page.evaluate(()=>{for(const r of document.querySelectorAll('#welcome-puzzle-mask rect')){const a=r.getAnimations()[0];if(a){a.pause();a.currentTime=500;}}});
   await page.screenshot({path:`.tools/welcome-puzzle-${width}.png`});

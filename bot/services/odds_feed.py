@@ -1,6 +1,8 @@
 """Server-only shared bookmaker feed, with owner-controlled refresh and backoff."""
 import asyncio
 import json
+import logging
+import math
 import time
 from pathlib import Path
 
@@ -23,6 +25,27 @@ SPORTS = {'mma': 'mma_mixed_martial_arts', 'boxing': 'boxing_boxing'}
 LAST_MANUAL = {}
 RETRY_AFTER = {}
 FAILURES = {}
+LAST_ERRORS = {}
+PROVIDER_KEY = ('provider', None)
+logger = logging.getLogger(__name__)
+
+
+class ProviderError(ValueError):
+    def __init__(self, status):
+        self.status = status
+        super().__init__({401: 'Доступ к поставщику отклонён: проверьте API-ключ.',
+                          403: 'Поставщик запретил доступ.',
+                          429: 'Поставщик ограничил запросы или исчерпан лимит API.'
+                          }.get(status, f'Поставщик вернул HTTP {status}.'))
+
+
+def retry_result(old, key):
+    remaining = max(0, math.ceil(RETRY_AFTER.get(key, 0) - time.time()))
+    reason = LAST_ERRORS[key]
+    return present(old, stale=True, refresh_hours=REFRESH_SECONDS/3600,
+                   retry_after_seconds=remaining, retry_at=RETRY_AFTER[key],
+                   refresh_error_reason=reason,
+                   refresh_error=f'{reason} Повторить можно через {remaining} сек.')
 
 def datetime_live(event):
     from datetime import datetime
@@ -50,9 +73,13 @@ async def get_feed(sport, force=False, event_id=None):
         if AUTO_ENABLED is False and not force:
             return present(old, stale=True, auto_disabled=True,
                            refresh_hours=REFRESH_SECONDS/3600, refresh_error='Автообновление отключено. Можно обновить выбранный бой стрелочкой.')
-        if time.time() < RETRY_AFTER.get(sport, 0):
-            return {**(old or {'events': []}), 'stale': True, 'refresh_error': 'Повторный запрос отложен после ошибки источника.'}
         manual_key = (sport, event_id)
+        # Only credential/quota failures affect other fights. Network and event
+        # failures have independent retry windows, including automatic refresh.
+        retry_key = manual_key if force else (sport, None)
+        for key in (PROVIDER_KEY, retry_key):
+            if time.time() < RETRY_AFTER.get(key, 0):
+                return retry_result(old, key)
         if force and time.time() - LAST_MANUAL.get(manual_key, 0) < 60:
             return present(old, refresh_hours=REFRESH_SECONDS/3600, stale=not bool(old), manual_throttled=True)
         if force:
@@ -73,7 +100,7 @@ async def get_feed(sport, force=False, event_id=None):
                     proxy=settings.proxy_url or None,
                 ) as response:
                     if response.status != 200:
-                        raise ValueError({401:'Доступ к поставщику отклонён: проверьте API-ключ.',403:'Поставщик запретил доступ.',429:'Поставщик ограничил запросы или исчерпан лимит API.'}.get(response.status,'Поставщик временно недоступен.'))
+                        raise ProviderError(response.status)
                     region_rows = await response.json()
                     if not isinstance(region_rows, list):
                         raise ValueError('invalid response')
@@ -110,8 +137,10 @@ async def get_feed(sport, force=False, event_id=None):
                 updated['line_fetched_at'] = time.time()
                 result = {**(old or result), 'events': [e for e in (old or {'events': []})['events'] if e['id'] != event_id] + [updated]}
             cache[sport] = result
-            FAILURES[sport] = 0
-            RETRY_AFTER[sport] = 0
+            for key in (retry_key, PROVIDER_KEY):
+                FAILURES.pop(key, None)
+                RETRY_AFTER.pop(key, None)
+                LAST_ERRORS.pop(key, None)
             CACHE.parent.mkdir(exist_ok=True)
             CACHE.write_text(json.dumps(cache, ensure_ascii=False), encoding='utf-8')
             return present(result, stale=False)
@@ -122,9 +151,18 @@ async def get_feed(sport, force=False, event_id=None):
                         e['line_invalid'] = True
                 cache[sport] = old
                 CACHE.write_text(json.dumps(cache, ensure_ascii=False), encoding='utf-8')
-            FAILURES[sport] = min(FAILURES.get(sport, 0)+1, 8)
-            RETRY_AFTER[sport] = time.time()+min(3600, 60*2**(FAILURES[sport]-1))
-            message = str(exc) if isinstance(exc, ValueError) else 'Не удалось связаться с поставщиком: сеть или время ожидания.'
-            if old:
-                return {**old, 'refresh_hours': REFRESH_HOURS, 'stale': True, 'refresh_error': message}
-            return {'events': [], 'error': 'Линия временно недоступна. Попробуйте позже.', 'stale': True}
+            if isinstance(exc, ProviderError) and exc.status in (401, 403, 429):
+                retry_key = PROVIDER_KEY
+            FAILURES[retry_key] = min(FAILURES.get(retry_key, 0)+1, 8)
+            RETRY_AFTER[retry_key] = time.time()+min(3600, 60*2**(FAILURES[retry_key]-1))
+            # Never log raw exceptions: request URLs can contain the API key.
+            message = (str(exc) if isinstance(exc, ProviderError) else
+                       'Поставщик не ответил за 30 секунд.' if isinstance(exc, asyncio.TimeoutError) else
+                       'Ошибка соединения с поставщиком.' if isinstance(exc, aiohttp.ClientError) else
+                       'Ключ поставщика не настроен.' if not settings.odds_api_key else
+                       'Поставщик вернул некорректные данные.')
+            LAST_ERRORS[retry_key] = message
+            logger.warning('Odds refresh failed: sport=%s scope=%s reason=%s retry_seconds=%s',
+                           sport, 'provider' if retry_key == PROVIDER_KEY else 'event' if force else 'auto',
+                           message, math.ceil(RETRY_AFTER[retry_key]-time.time()))
+            return retry_result(old, retry_key)

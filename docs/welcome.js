@@ -94,7 +94,16 @@
   function setBrightness(value){const n=Number(value);if(!Number.isFinite(n)||n<50||n>220)return;brightnessInput.value=n;brightnessLabel.querySelector('output').textContent=n+'%';gate.style.setProperty('--letter-brightness',String(n/100));}
   try{const saved=localStorage.getItem('p2p-welcome-letter-brightness');if(saved!==null)setBrightness(saved);}catch{}
   brightnessInput.addEventListener('input',()=>{setBrightness(brightnessInput.value);try{localStorage.setItem('p2p-welcome-letter-brightness',brightnessInput.value);}catch{}});
-  // Keep applying the saved appearance, but retire the temporary tuning panel.
+  // Published glass preset: identical on fresh devices and browsers with old
+  // experimental slider values. Those values remain stored, but cannot change
+  // the released appearance. Calibrated against the approved desktop capture.
+  setBlur(.7);
+  setTint(90);
+  for(const [key,value] of Object.entries({
+    '--ray-width':'300px', '--ray-length':'30%', '--ray-blur':'30px',
+    '--ray-diffusion':'30px', '--ray-halo-opacity':'.18'
+  }))gate.style.setProperty(key,value);
+  // Retire the temporary tuning panel.
   tuners.remove();
   const backline=document.createElement('div');
   backline.className='welcome-backline';
