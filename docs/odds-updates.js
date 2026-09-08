@@ -84,6 +84,9 @@ window.oddsMovement = function(previous, next) {
   const deltaStyle=document.createElement('style');
   deltaStyle.textContent='.event .event-row:has(.refresh-line) .odd{padding-left:2px!important;padding-right:2px!important;text-align:center;min-width:0}.event-row>.refresh-line{right:43.3%}.odd.odds-with-change{display:flex;flex-direction:column;align-items:center;justify-content:center}.odds-with-change .odds-arrow{display:block;white-space:nowrap;font-size:9px;line-height:18px;letter-spacing:-.3px;text-align:center}.fight-price strong.odds-with-change .odds-arrow{font-size:13px;letter-spacing:0}';
   document.head.append(deltaStyle);
+  const directionFill=document.createElement('style');
+  directionFill.textContent='.odds-up{background:linear-gradient(to top,transparent 50%,#70BD8B88 50%,#70BD8B88 100%)!important}.odds-down{background:linear-gradient(to bottom,transparent 50%,#A3C85A88 50%,#A3C85A88 100%)!important}';
+  document.head.append(directionFill);
   const stickyCss=document.createElement('style');
   stickyCss.textContent='.fight-sticky-heading{position:sticky;top:0;z-index:2;background:#fff;padding:1px 0 6px;border-bottom:1px solid var(--line)}.fight-sticky-heading p{margin:6px 0;font-size:12px;line-height:1.3}';
   document.head.append(stickyCss);

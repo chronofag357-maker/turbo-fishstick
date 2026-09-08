@@ -12,7 +12,7 @@ def freebk_url(mini_app_url: str) -> str:
     if path.endswith('.html'):
         path = path.rsplit('/', 1)[0] + '/'
     path = path.rstrip('/') + '/mini-app.html'
-    return urlunsplit((parts.scheme, parts.netloc, path, 'v=217', ''))
+    return urlunsplit((parts.scheme, parts.netloc, path, 'v=218', ''))
 
 
 def freebk_keyboard(mini_app_url: str) -> InlineKeyboardMarkup | None:
