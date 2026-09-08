@@ -6,6 +6,9 @@ const a={fighters:['A','B'],priceKey:'book',totalKey:'book',odds:[2,null,3],tota
 const b={...a,odds:[2.2,null,2.8],totals:{line:2.5,over:1.9,under:1.9}};
 assert.equal(compare(a,b).outcomes0.direction,'up');
 assert.equal(compare(a,b).outcomes2.direction,'down');
+assert.equal(compare(a,b).outcomes0.delta,.2);
+assert.equal(compare(a,b).outcomes2.delta,-.2);
+assert.equal(compare(a,{...a,odds:[2.01,null,3]}).outcomes0.delta,.01);
 assert.equal(compare(a,b).totals1.direction,'up');
 assert.equal(compare(a,b).totals2.direction,'down');
 assert.equal(Object.keys(compare(a,a)).length,0);

@@ -3,7 +3,10 @@ window.oddsMovement = function(previous, next) {
   const result = {};
   if (!previous || previous.unavailable || next.unavailable || previous.fighters.join('|') !== next.fighters.join('|')) return result;
   const compare = (key, a, b) => {
-    if (Number.isFinite(a) && Number.isFinite(b) && a !== b) result[key] = {direction: b > a ? 'up' : 'down', from: a, to: b};
+    if (Number.isFinite(a) && Number.isFinite(b)) {
+      const delta = Math.round((b-a)*10000)/10000;
+      if(delta)result[key] = {direction: delta > 0 ? 'up' : 'down', from: a, to: b, delta};
+    }
   };
   if (previous.priceKey && previous.priceKey === next.priceKey) next.odds.forEach((n,i) => compare('outcomes'+i,previous.odds[i],n));
   if (previous.totalKey && previous.totalKey === next.totalKey && previous.totals && next.totals && previous.totals.line === next.totals.line) {
@@ -20,7 +23,21 @@ window.oddsMovement = function(previous, next) {
     button.classList.add('odds-'+change.direction);
     button.title = 'Было '+fmt(change.from)+' → '+fmt(change.to);
     const arrow = document.createElement('small');
-    arrow.className = 'odds-arrow'; arrow.textContent = change.direction === 'up' ? '▲' : '▼';
+    const amount=Math.abs(change.delta).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:4});
+    arrow.className = 'odds-arrow';
+    // Symbolic direction icon, not an invented price-history chart.
+    const trend=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    trend.setAttribute('viewBox','0 0 24 16');
+    trend.setAttribute('width','22');trend.setAttribute('height','15');
+    trend.setAttribute('aria-hidden','true');
+    trend.style.cssText='vertical-align:middle;margin-right:4px';
+    const path=document.createElementNS(trend.namespaceURI,'path');
+    path.setAttribute('d',change.direction==='up'?'M2 13L7 8L11 11L17 5L22 2':'M2 2L7 7L11 4L17 10L22 13');
+    path.setAttribute('fill','none');path.setAttribute('stroke','currentColor');
+    path.setAttribute('stroke-width','2');path.setAttribute('stroke-linecap','round');
+    path.setAttribute('stroke-linejoin','round');trend.append(path);
+    arrow.append(trend,document.createTextNode((change.direction === 'up' ? '+' : '−') + amount));
+    arrow.setAttribute('aria-label',(change.direction === 'up' ? 'Вырос на ' : 'Снизился на ')+amount);
     button.append(arrow);
   };
   function details() {
@@ -69,7 +86,7 @@ window.oddsMovement = function(previous, next) {
     movements=updated;previous=new Map(data.map(e=>[e.id,e]));baseSet.call(screen,data);
   };
   const css=document.createElement('style');
-  css.textContent='.odds-up{color:#147342!important;background:#e5f5ec!important}.odds-down{color:#bd2940!important;background:#fce9ec!important}.odds-arrow{display:block;font-size:10px;line-height:14px}.odds-stale{opacity:.45}.fight-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.fight-price{text-align:center;background:#f5f5f9;padding:10px 2px;border-radius:5px}.fight-price small{display:block;font-size:11px}.fight-price strong{display:block;font-size:21px;padding:8px 0}';
+  css.textContent='.odds-up{color:#257243!important;background:#edf8f0!important}.odds-down{color:#567A22!important;background:#E6F0CD!important}.odds-arrow{display:block;font-size:10px;line-height:14px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.odds-stale{opacity:.45}.fight-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.fight-price{text-align:center;background:#f5f5f9;padding:10px 2px;border-radius:5px}.fight-price small{display:block;font-size:11px}.fight-price strong{display:block;font-size:21px;padding:8px 0}';
   document.head.append(css);
   const stickyCss=document.createElement('style');
   stickyCss.textContent='.fight-sticky-heading{position:sticky;top:0;z-index:2;background:#fff;padding:1px 0 6px;border-bottom:1px solid var(--line)}.fight-sticky-heading p{margin:6px 0;font-size:12px;line-height:1.3}';
