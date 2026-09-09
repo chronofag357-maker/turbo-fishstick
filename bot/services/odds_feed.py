@@ -19,7 +19,8 @@ def configure_policy(policy):
     global AUTO_ENABLED, REFRESH_SECONDS
     AUTO_ENABLED = policy['enabled']
     REFRESH_SECONDS = policy['seconds']
-REGIONS = 'us,us2,uk,eu,au'
+REGIONS = 'eu'
+BOOKMAKER = 'onexbet'
 SPORTS = {'mma': 'mma_mixed_martial_arts', 'boxing': 'boxing_boxing'}
 
 LAST_MANUAL = {}
@@ -77,15 +78,19 @@ async def get_feed(sport, force=False, event_id=None):
         # Only credential/quota failures affect other fights. Network and event
         # failures have independent retry windows, including automatic refresh.
         retry_key = manual_key if force else (sport, None)
-        for key in (PROVIDER_KEY, retry_key):
-            if time.time() < RETRY_AFTER.get(key, 0):
-                return retry_result(old, key)
+        # No long application-side error lockout for manual requests.
+        # Background retries retain backoff so the scheduler cannot hammer a
+        # failing provider every ten seconds.
+        if not force:
+            for key in (PROVIDER_KEY, retry_key):
+                if time.time() < RETRY_AFTER.get(key, 0):
+                    return retry_result(old, key)
         if force and time.time() - LAST_MANUAL.get(manual_key, 0) < 60:
             return present(old, refresh_hours=REFRESH_SECONDS/3600, stale=not bool(old), manual_throttled=True)
         if force:
             LAST_MANUAL[manual_key] = time.time()
         effective_seconds = max(40 if old and any(datetime_live(e) for e in old.get('events', [])) else 60, REFRESH_SECONDS)
-        if not force and old and old.get('regions') == REGIONS and time.time() - old['fetched_at'] < effective_seconds:
+        if not force and old and old.get('bookmaker_scope') == BOOKMAKER and time.time() - old['fetched_at'] < effective_seconds:
             return present(old, refresh_hours=effective_seconds/3600, stale=False, served_from_cache=True)
         try:
             if not settings.odds_api_key:
@@ -94,7 +99,7 @@ async def get_feed(sport, force=False, event_id=None):
                 async def fetch_region(region):
                   async with session.get(
                     'https://api.the-odds-api.com/v4/sports/' + SPORTS[sport] + '/odds',
-                    params={'apiKey': settings.odds_api_key, 'regions': region,
+                    params={'apiKey': settings.odds_api_key, 'bookmakers': BOOKMAKER,
                             'markets': 'h2h,totals', 'oddsFormat': 'decimal',
                             **({'eventIds': event_id} if event_id else {})},
                     proxy=settings.proxy_url or None,
@@ -123,7 +128,7 @@ async def get_feed(sport, force=False, event_id=None):
                             else:
                                 books.append(book)
                 rows = list(merged.values())
-            result = {'events': rows, 'fetched_at': time.time(), 'source': 'The Odds API', 'refresh_hours': effective_seconds/3600, 'regions': REGIONS}
+            result = {'events': rows, 'fetched_at': time.time(), 'source': 'The Odds API', 'refresh_hours': effective_seconds/3600, 'regions': REGIONS, 'bookmaker_scope': BOOKMAKER}
             if event_id:
                 updated = next((e for e in rows if e['id'] == event_id), None)
                 if updated is None:
@@ -165,4 +170,7 @@ async def get_feed(sport, force=False, event_id=None):
             logger.warning('Odds refresh failed: sport=%s scope=%s reason=%s retry_seconds=%s',
                            sport, 'provider' if retry_key == PROVIDER_KEY else 'event' if force else 'auto',
                            message, math.ceil(RETRY_AFTER[retry_key]-time.time()))
+            if force:
+                return present(old, stale=True, refresh_error_reason=message,
+                               refresh_error=message)
             return retry_result(old, retry_key)

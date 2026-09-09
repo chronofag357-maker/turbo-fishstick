@@ -1,0 +1,81 @@
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet{height:var(--welcome-sheet-height);max-height:var(--welcome-sheet-height);background:#fff;color:#20243f;color-scheme:light;padding:34px 12px 10px;border-color:#dedee5}
+#panel.welcome-coupon-sheet #panel-body{height:100%!important;overflow:visible!important;padding:0}
+#panel.welcome-coupon-sheet .welcome-coupon{display:flex;flex-direction:column;gap:5px;height:100%;padding:0;width:100%;margin:auto}
+#panel.welcome-coupon-sheet .auth-generate{display:flex;align-items:center;justify-content:space-between;border:1px solid #d8d9e2;border-radius:7px;min-height:38px;padding:8px 12px;text-align:left;font-size:13px;font-weight:600}
+.auth-cursor{color:#777b92}
+#panel.welcome-coupon-sheet [data-auth-key="0"]{grid-column:2}
+.auth-quote{display:flex;justify-content:space-between;align-items:center;border:1px solid #d8d9e2;border-radius:7px;min-height:38px;padding-left:12px;font-size:11px;color:#777b92}
+#panel.welcome-coupon-sheet [data-code-source]{width:70px;align-self:stretch;display:grid;place-items:center;background:#f0f0f5;border-radius:0 6px 6px 0;color:#20243f;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+#panel.welcome-coupon-sheet .auth-keypad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(4,44px);gap:4px 22px;justify-content:center;flex:1;align-content:center;animation:auth-keypad-in 220ms ease-out}
+#panel.welcome-coupon-sheet .auth-keypad[hidden]{display:none}
+#panel.welcome-coupon-sheet .auth-keypad button{width:44px;height:44px;min-height:44px;border-radius:50%;background:#191919;color:#fff;font:400 24px Arial;padding:0;touch-action:manipulation}
+#panel.welcome-coupon-sheet .auth-keypad button:active{background:#424242}
+.auth-entry-row{display:flex;align-items:center;min-height:32px;border-bottom:1px solid #d8d9e2;margin-top:auto}
+#panel.welcome-coupon-sheet [data-code-entry]{min-width:0;width:100%;border:0;background:transparent;color:#20243f;padding:3px 8px;font:500 21px Arial;font-variant-numeric:tabular-nums;caret-color:#20243f}
+.auth-entry-row [data-auth-percent]{font:11px Arial;color:#777b92;padding-right:8px}
+.auth-entry-row.is-ready{border-color:#70bd8b}
+.auth-slide{position:relative;flex-shrink:0;height:44px;border-radius:6px;background:#f1e4eb;overflow:hidden}
+.auth-trail{position:absolute;right:0;top:0;bottom:0;width:var(--auth-progress,0%);background:#70bd8b;pointer-events:none}
+.auth-slide-hint{position:absolute;left:8px;top:0;height:100%;display:flex;align-items:center;font-size:10px;color:#777b92;pointer-events:none}
+#panel.welcome-coupon-sheet [data-verify-slider]{position:absolute;right:0;top:0;height:44px;width:45%;min-height:44px;background:#9b9db2;color:#fff;border-radius:0;padding:0 4px;font-size:12px;font-weight:700;touch-action:none;user-select:none;cursor:grab}
+#panel.welcome-coupon-sheet .is-ready [data-verify-slider]{background:#257243}
+#panel.welcome-coupon-sheet .is-ready{background-color:#edf8f0}
+#panel.welcome-coupon-sheet .menu-demo-message{min-height:13px;margin:0;color:#567a22;font-size:10px}
+@keyframes auth-keypad-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#panel.welcome-coupon-sheet .auth-keypad{animation:none}}
+#panel.welcome-coupon-sheet .auth-generate,#panel.welcome-coupon-sheet .auth-quote,#panel.welcome-coupon-sheet .auth-entry-row{box-sizing:border-box;display:flex;align-items:center;width:100%;height:54px;min-height:54px;flex-shrink:0;margin:0;padding:0 0 0 12px;border:1px solid #d8d9e2;border-radius:7px;background:#fff;color:#20243f;font:600 15px Arial,sans-serif;overflow:hidden}
+#panel.welcome-coupon-sheet .auth-card-end,#panel.welcome-coupon-sheet [data-code-source],#panel.welcome-coupon-sheet [data-auth-percent]{display:grid;place-items:center;align-self:stretch;width:64px;flex-shrink:0;padding:0;background:#ebebf1;border:0;border-radius:0 6px 6px 0;font:600 20px Arial;color:#20243f}
+#panel.welcome-coupon-sheet [data-auth-percent]{font-size:13px}
+#panel.welcome-coupon-sheet [data-code-entry]{padding:0;font:600 15px Arial;color:#20243f;box-shadow:none;outline-offset:-2px}
+#panel.welcome-coupon-sheet [data-code-entry]::placeholder{color:#20243f;opacity:1}
+#panel.welcome-coupon-sheet .auth-entry-row.is-ready{background:#edf8f0;border-color:#70bd8b}
+#panel.welcome-coupon-sheet .auth-keypad{gap:2px 22px;flex:0;grid-template-rows:repeat(4,44px)}
+#panel.welcome-coupon-sheet .auth-slide{margin-top:auto}
+#panel.welcome-coupon-sheet .auth-placeholder{font:400 10px Arial,sans-serif;color:#777b92}
+#panel.welcome-coupon-sheet .auth-card-end svg{width:27px;height:27px;stroke:#777b92;fill:none}
+#panel.welcome-coupon-sheet .auth-quote [data-code-source]{order:0;display:flex;align-items:center;justify-content:flex-start;flex:1;width:auto;background:transparent;border-radius:0;font:600 20px Arial,sans-serif}
+#panel.welcome-coupon-sheet [data-code-entry]:focus-visible{outline:none}
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet [data-code-entry],#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet [data-code-entry]:focus-visible{outline:none;border:0;box-shadow:none;background:transparent}
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row.is-ready{background:#fff;border-color:#d8d9e2}
+#panel.welcome-coupon-sheet .auth-entry-row:focus-within{border-color:#777b92}
+#panel.welcome-coupon-sheet .auth-entry-row{position:relative}
+.auth-entry-caret{display:none;position:absolute;left:12px;top:17px;height:20px;border-left:1px solid currentColor;pointer-events:none;animation:auth-caret-blink 1s step-end infinite}
+.auth-entry-row.is-empty .auth-entry-caret{display:block}
+@keyframes auth-caret-blink{50%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.auth-entry-caret{animation:none}}
+#panel.welcome-coupon-sheet .auth-generate .auth-card-end svg,#panel.welcome-coupon-sheet .auth-quote [data-code-source]:not(:empty){color:#257243;stroke:currentColor;animation:auth-green-pulse 2400ms ease-in-out infinite}
+@keyframes auth-green-pulse{0%,100%{opacity:.75;filter:drop-shadow(0 0 0 transparent)}50%{opacity:1;filter:drop-shadow(0 0 3px #70bd8b70)}}
+#panel.welcome-coupon-sheet .auth-generate .auth-card-end svg{animation-duration:1000ms}
+#panel.welcome-coupon-sheet .auth-lock svg{width:25px;height:29px;overflow:visible;fill:currentColor;stroke:none;color:#777b92}
+#panel.welcome-coupon-sheet .auth-lock .auth-lock-shackle{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;transition:transform 220ms ease-out}
+#panel.welcome-coupon-sheet .auth-lock.is-unlocked svg{color:#257243}
+#panel.welcome-coupon-sheet .auth-lock.is-unlocked .auth-lock-shackle{transform:translateY(-5px)}
+@media(prefers-reduced-motion:reduce){#panel.welcome-coupon-sheet .auth-lock .auth-lock-shackle{transition:none}}
+@media(prefers-reduced-motion:reduce){#panel.welcome-coupon-sheet .auth-generate .auth-card-end svg,#panel.welcome-coupon-sheet .auth-quote [data-code-source]:not(:empty){animation:none}}
+#panel.welcome-coupon-sheet .auth-generate{animation:auth-action-pulse 1s ease-in-out infinite;color:#777b92}
+#panel.welcome-coupon-sheet .auth-generate .auth-placeholder,#panel.welcome-coupon-sheet .auth-generate .auth-card-end{color:inherit}
+#panel.welcome-coupon-sheet .auth-generate .auth-card-end svg{color:inherit;stroke:currentColor;animation:none}
+@keyframes auth-action-pulse{0%,100%{color:#777b92;border-color:#d8d9e2}50%{color:#257243;border-color:#70bd8b}}
+.auth-dial-dots{grid-column:1;grid-row:4;width:44px;height:44px;display:grid;place-items:center;color:#257243;pointer-events:none}
+.auth-dial-dots svg{width:23px;height:29px;fill:currentColor;stroke:none}
+@media(prefers-reduced-motion:reduce){#panel.welcome-coupon-sheet .auth-generate{animation:none;color:#257243}}
+#panel.welcome-coupon-sheet .auth-generate.is-generated{animation:none;color:#257243;border-color:#70bd8b}
+#panel.welcome-coupon-sheet .auth-quote.is-generated{border-color:#70bd8b}
+#panel.welcome-coupon-sheet .auth-quote.is-generated .auth-lock svg{color:#257243}
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row{border-color:#d8d9e2;background:#fff}
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row.is-ready{border-color:#70bd8b;background:#fff}
+#panel.welcome-coupon-sheet .auth-rolling-code{font:600 20px Arial,sans-serif;font-variant-numeric:tabular-nums;min-width:4ch}
+#panel.welcome-coupon-sheet .is-awaiting-code .auth-entry-caret{animation:none}
+#panel.welcome-coupon-sheet .auth-generate:disabled{cursor:default;opacity:1}
+#panel.welcome-coupon-sheet .auth-generate,#panel.welcome-coupon-sheet .auth-quote,#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row{height:calc(var(--auth-unit) + 4px);min-height:calc(var(--auth-unit) + 4px)}
+#panel.welcome-coupon-sheet .auth-keypad{margin-top:3px}
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet{--auth-unit:min(44px,calc((var(--welcome-sheet-height) - 78px)/8));padding-top:30px;padding-bottom:8px}
+#panel.welcome-coupon-sheet .welcome-coupon{gap:3px}
+#panel.welcome-coupon-sheet .auth-generate,#panel.welcome-coupon-sheet .auth-quote,#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row{height:calc(var(--auth-unit) + 4px);min-height:calc(var(--auth-unit) + 4px)}
+#panel.welcome-coupon-sheet .auth-keypad{grid-template-columns:repeat(3,var(--auth-unit));grid-template-rows:repeat(4,var(--auth-unit));gap:2px 22px}
+#panel.welcome-coupon-sheet .auth-keypad button,#panel.welcome-coupon-sheet .auth-dial-dots{width:var(--auth-unit);height:var(--auth-unit);min-height:var(--auth-unit);font-size:calc(var(--auth-unit)*.55)}
+#panel.welcome-coupon-sheet .auth-slide,#panel.welcome-coupon-sheet [data-verify-slider]{height:var(--auth-unit);min-height:var(--auth-unit)}
+#panel.welcome-coupon-sheet .auth-entry-caret{top:50%;transform:translateY(-50%);height:16px}
+#panel.welcome-coupon-sheet .auth-card-end svg{max-height:calc(var(--auth-unit) - 4px)}
+#panel.welcome-coupon-sheet [data-code-entry]::placeholder{font:400 10px Arial,sans-serif;color:#777b92;opacity:1;text-indent:5px}
+#panel.welcome-coupon-sheet .auth-keypad .auth-backspace-icon{width:72%;height:72%;max-width:28px;max-height:24px;margin:auto;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}

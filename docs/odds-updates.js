@@ -26,12 +26,9 @@ window.oddsMovement = function(previous, next) {
     button.title = 'Было '+fmt(change.from)+' → '+fmt(change.to);
     const arrow = document.createElement('small');
     arrow.className = 'odds-arrow';
-    const number=n=>n.toLocaleString('ru-RU',{maximumFractionDigits:4});
-    arrow.textContent=number(change.from)+' → '+number(change.to);
-    arrow.setAttribute('aria-label',button.title);
-    const price=button.querySelector('.total-price');
-    if(price)price.replaceChildren(arrow);
-    else button.replaceChildren(arrow);
+    arrow.textContent=change.direction==='up'?'↑':'↓';
+    arrow.setAttribute('aria-hidden','true');
+    button.append(arrow);
   };
   function details() {
     const root = document.getElementById('fight-live-details');
@@ -47,7 +44,7 @@ window.oddsMovement = function(previous, next) {
     line(e.fighters.join(' — '));
     if(e.originalFighters&&e.originalFighters.join(' — ')!==e.fighters.join(' — '))line(e.originalFighters.join(' — '));
     lineTarget=root;
-    if(e.cardInfo){line(e.cardInfo.stage);const p=document.createElement('p'),a=document.createElement('a');a.href=e.cardInfo.source;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Источник турнира · проверен '+e.cardInfo.checked;p.append(a);root.append(p);line(e.cardInfo.note||'Место в карде может измениться. Справочник обновляется отдельно от коэффициентов.');if(e.cardInfo.stale)line('Последняя автоматическая проверка источника не удалась.');}
+    if(e.cardInfo){line(e.cardInfo.stage);line(e.cardInfo.note||'Место в карде может измениться. Справочник обновляется отдельно от коэффициентов.');if(e.cardInfo.stale)line('Последняя автоматическая проверка источника не удалась.');}
     if(e.metadataUnavailable)line('По дополнительному источнику бой отменён или требует проверки. Выбор исходов отключён.');
     if(e.unavailable)line('Обновление недоступно. Ниже — сохранённые значения, не текущая линия.');
     const group = (labels,values,kind) => {
@@ -55,6 +52,7 @@ window.oddsMovement = function(previous, next) {
       labels.forEach((label,i)=>{const cell=document.createElement('button');cell.type='button';cell.className='fight-price';cell.dataset.odd=e.id;cell.dataset.index=i;cell.dataset.couponMarket=kind;cell.disabled=!Number.isFinite(values[i])||values[i]<=1||kind==='totals'&&i===0||!!(e.unavailable||e.metadataUnavailable||e.cardInfo?.cancelled)||e.status==='finished';cell.setAttribute('aria-pressed',String(selected.has(e.id+kind+i)));const title=document.createElement('small');title.textContent=label;const value=document.createElement('strong');value.textContent=fmt(values[i]);decorate(value,movements.get(e.id)?.[kind+i]);cell.append(title,value);row.append(cell)});root.append(row);
     };
     group(['Победа 1','Ничья','Победа 2'],e.odds,'outcomes');line(e.priceNote);
+    if(window.fightSourceLinks){root.lastElementChild.classList.add('fight-line-metadata');root.lastElementChild.append(window.fightSourceLinks(e));}
     if(e.totals){line('Тотал '+e.totals.line+' раунда');group(['Раунды','Больше','Меньше'],[e.totals.line,e.totals.over,e.totals.under],'totals');line(e.totalNote)}
     else line('Тотал раундов пока не опубликован');
   }
@@ -82,10 +80,10 @@ window.oddsMovement = function(previous, next) {
   css.textContent='.odds-up{color:#257243!important;background:#edf8f0!important}.odds-down{color:#567A22!important;background:#E6F0CD!important}.odds-arrow{display:block;font-size:10px;line-height:14px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.odds-stale{opacity:.45}.fight-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.fight-price{text-align:center;background:#f5f5f9;padding:10px 2px;border-radius:5px}.fight-price small{display:block;font-size:11px}.fight-price strong{display:block;font-size:21px;padding:8px 0}';
   document.head.append(css);
   const deltaStyle=document.createElement('style');
-  deltaStyle.textContent='.event .event-row:has(.refresh-line) .odd{padding-left:2px!important;padding-right:2px!important;text-align:center;min-width:0}.event-row>.refresh-line{right:43.3%}.odd.odds-with-change{display:flex;flex-direction:column;align-items:center;justify-content:center}.odds-with-change .odds-arrow{display:block;white-space:nowrap;font-size:9px;line-height:18px;letter-spacing:-.3px;text-align:center}.fight-price strong.odds-with-change .odds-arrow{font-size:13px;letter-spacing:0}';
+  deltaStyle.textContent='.event .event-row:has(.refresh-line) .odd{padding-left:2px!important;padding-right:2px!important;text-align:center;min-width:0}.event-row>.refresh-line{right:43.3%}';
   document.head.append(deltaStyle);
   const directionFill=document.createElement('style');
-  directionFill.textContent='.odds-up{background:linear-gradient(to top,transparent 50%,#70BD8B88 50%,#70BD8B88 100%)!important}.odds-down{background:linear-gradient(to bottom,transparent 50%,#A3C85A88 50%,#A3C85A88 100%)!important}';
+  directionFill.textContent='.odds-up{background:#E6F0CD!important;color:inherit!important}.odds-down{background:#F1E4EB!important;color:inherit!important}.odds-with-change{position:relative}.odds-with-change .odds-arrow{position:absolute;top:50%;transform:translateY(-50%);margin:0;padding:0;font:400 12px/1 Arial,sans-serif!important;pointer-events:none}.odds-up>.odds-arrow{left:2px;color:#567A22}.odds-down>.odds-arrow{right:2px;color:#98536F}.fight-price:has(.odds-up){background:#E6F0CD}.fight-price:has(.odds-down){background:#F1E4EB}';
   document.head.append(directionFill);
   const stickyCss=document.createElement('style');
   stickyCss.textContent='.fight-sticky-heading{position:sticky;top:0;z-index:2;background:#fff;padding:1px 0 6px;border-bottom:1px solid var(--line)}.fight-sticky-heading p{margin:6px 0;font-size:12px;line-height:1.3}';

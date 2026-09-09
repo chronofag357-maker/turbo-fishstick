@@ -35,27 +35,46 @@ class RetryTests(unittest.IsolatedAsyncioTestCase):
             first = await feed.get_feed('mma', True, 'a')
             again = await feed.get_feed('mma', True, 'a')
             self.assertEqual(session.call_count, 1)
-            self.assertEqual(first['refresh_error_reason'], again['refresh_error_reason'])
-            self.assertEqual(again['retry_after_seconds'], 60)
-            self.assertEqual(again['retry_at'], 1060)
+            self.assertTrue(again['manual_throttled'])
+            self.assertNotIn('retry_at', first)
             await feed.get_feed('mma', True, 'b')
             self.assertEqual(session.call_count, 2)
             self.assertEqual(len(first['events']), 2)
 
-    async def test_quota_error_blocks_provider_not_just_event(self):
+    async def test_manual_request_ignores_provider_error_backoff(self):
         with patch.object(feed.aiohttp, 'ClientSession', side_effect=feed.ProviderError(429)) as session:
             await feed.get_feed('mma', True, 'a')
             result = await feed.get_feed('boxing', True, 'other')
-            self.assertEqual(session.call_count, 1)
+            self.assertEqual(session.call_count, 2)
             self.assertIn('лимит', result['refresh_error'])
 
-    async def test_backoff_expires_and_grows(self):
+    async def test_only_fixed_manual_cooldown_remains(self):
         with patch.object(feed.aiohttp, 'ClientSession', side_effect=asyncio.TimeoutError) as session:
             await feed.get_feed('mma', True, 'a')
             with patch.object(feed.time, 'time', return_value=1061):
                 result = await feed.get_feed('mma', True, 'a')
             self.assertEqual(session.call_count, 2)
-            self.assertEqual(result['retry_after_seconds'], 120)
+            self.assertNotIn('retry_after_seconds', result)
+
+    async def test_single_bookmaker_single_request(self):
+        from unittest.mock import MagicMock, AsyncMock
+        response = MagicMock(status=200)
+        response.json = AsyncMock(return_value=[{'id':'a','bookmakers':[{'key':'onexbet'}]}])
+        request = MagicMock()
+        request.__aenter__ = AsyncMock(return_value=response)
+        session = MagicMock()
+        session.get.return_value = request
+        context = MagicMock()
+        context.__aenter__ = AsyncMock(return_value=session)
+        with patch.object(feed.aiohttp, 'ClientSession', return_value=context):
+            result = await feed.get_feed('mma', True, 'a')
+        self.assertFalse(result['stale'])
+        session.get.assert_called_once()
+        params = session.get.call_args.kwargs['params']
+        self.assertEqual(params['bookmakers'], 'onexbet')
+        self.assertNotIn('regions', params)
+        self.assertEqual(params['eventIds'], 'a')
+        self.assertEqual(params['markets'], 'h2h,totals')
 
     async def test_logs_do_not_contain_exception_secrets(self):
         with patch.object(feed.aiohttp, 'ClientSession', side_effect=ValueError('apiKey=secret')):

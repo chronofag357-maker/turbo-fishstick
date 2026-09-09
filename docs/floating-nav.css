@@ -1,0 +1,12 @@
+/* Independent transparent controls: the spaces between them pass touches through. */
+#app nav.bottom-nav .nav-item{font-weight:600}
+#app nav.bottom-nav{height:calc(52px + env(safe-area-inset-bottom));padding:2px 8px calc(2px + env(safe-area-inset-bottom));background:transparent;border:0;box-shadow:none;pointer-events:none}
+#app nav.bottom-nav .nav-item{justify-self:center;width:64px;min-height:48px;padding:0;gap:1px;pointer-events:auto;color:var(--ink);background:transparent;line-height:11px;font-size:10px}
+#app nav.bottom-nav .nav-item svg{box-sizing:border-box;width:36px;height:36px;padding:7px;border:1px solid var(--blue);border-radius:50%;background:transparent;flex-shrink:0}
+#app nav.bottom-nav .nav-icon{fill:var(--blue);stroke:var(--blue)}
+#app nav.bottom-nav .nav-item.active svg{border-color:var(--blue);border-width:2px;padding:6px}
+#app nav.bottom-nav .nav-item:active svg{transform:scale(.94)}
+#app nav.bottom-nav .nav-item:focus-visible{outline:2px solid var(--blue);border-radius:18px;outline-offset:1px}
+#app nav.bottom-nav .dot{top:2px;right:15px;background:var(--blue)}
+#app.app{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+@media(forced-colors:active){#app nav.bottom-nav .nav-icon{fill:ButtonText;stroke:ButtonText}#app nav.bottom-nav .nav-item svg{border-color:ButtonText}}

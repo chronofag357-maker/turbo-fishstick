@@ -46,7 +46,7 @@
     #app .sports>.sport{--sport-stroke:#777b92}
     #app .sports .sport-label{color:#777b92;background:none}
     #app .sports:not(.broadcast-open)>.sport.active,#app .sports.broadcast-open>.broadcast-tab{--sport-stroke:var(--sport-gradient)}
-    #app .sports:not(.broadcast-open)>.sport.active .sport-label,#app .sports.broadcast-open>.broadcast-tab .sport-label{color:#397eae;text-decoration:underline;text-decoration-color:#5797c2;text-underline-offset:4px}
+    #app .sports:not(.broadcast-open)>.sport.active .sport-label,#app .sports.broadcast-open>.broadcast-tab .sport-label{color:#397eae;text-decoration:none}
     @supports ((background-clip:text) or (-webkit-background-clip:text)){
       #app .sports:not(.broadcast-open)>.sport.active .sport-label,#app .sports.broadcast-open>.broadcast-tab .sport-label{background:linear-gradient(100deg,#397eae 0%,#5797c2 55%,#70963d 100%);background-clip:text;-webkit-background-clip:text;color:transparent}
     }

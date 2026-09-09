@@ -1,0 +1,59 @@
+/* Compact real layout, not overflow clipping. Keep the events vertically scrollable. */
+#app .event .original-name{display:none}
+#app .event .fighter-link{font-weight:600;font-size:12px}
+#app .event .fighter-role{font-weight:400}
+#app .event .fighters{gap:4px;padding-top:4px;padding-bottom:4px}
+#app .event .event-row{min-height:48px}
+#app .tournament-label>strong,#app .tournament-label>.tournament-description{display:inline;line-height:1.25;margin:0}
+#app .tournament-label>.tournament-description::before{content:' · '}
+#app #events .event-head time{color:var(--ink);-webkit-text-fill-color:var(--ink)}
+#app #events .event-head .fight-stage-label{color:var(--combat-accent);-webkit-text-fill-color:var(--combat-accent)}
+#app .fight-time-cell{padding:4px 12px;line-height:1.3;min-width:0}
+#app .fight-time-cell time{padding:0;display:inline}
+#app .fight-inline-summary{display:inline;font-size:9px;font-weight:400}
+#app .fight-inline-summary>summary{display:inline;cursor:pointer;margin-left:5px;color:#777b92;list-style:none}
+#app .fight-inline-summary>summary::-webkit-details-marker{display:none}
+#app .fight-inline-summary>summary::before{content:'▸';color:#A3C85A;margin-right:3px}
+#app .fight-inline-summary[open]>summary::before{content:'▾'}
+#app .fight-inline-summary>.line-source{color:#777b92;-webkit-text-fill-color:#777b92}
+#app .tournament-schedule,#app .tournament-schedule time,#app #esports-events .es-title time{font-size:9px;font-weight:500;line-height:1.25}
+.fight-event-sources{display:inline;padding:0;font-size:9px;font-weight:400;line-height:inherit}
+.fight-event-sources a::before{content:' · ';display:inline-block;margin:0 3px;text-decoration:none}
+.fight-event-sources a{color:#777b92;-webkit-text-fill-color:#777b92;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+#app .topbar{height:44px;padding:0 8px;gap:9px}
+#app .topbar .icon-button{width:30px;height:40px}
+#app .topbar .icon-button svg{width:21px;height:21px}
+#app .modes{gap:12px}
+#app .mode{font-size:19px}
+#app .header .sports{display:grid;grid-template-columns:1.3fr .65fr 1.1fr 1fr 1.05fr;height:54px;gap:2px;padding:0 5px;overflow:visible;align-items:stretch}
+#app .sports>.sport,#app .sports>.sport:first-child{width:100%;min-width:0;min-height:0;flex:none;padding:3px 0 4px;gap:4px;font-size:10px;line-height:1.1;white-space:normal}
+#app .sports>.sport svg{width:21px;height:21px;flex-shrink:0}
+#app .sports .sport-label{display:block;max-width:100%;overflow-wrap:normal}
+#app .sports .broadcast-caption{gap:2px;flex-wrap:wrap;justify-content:center;white-space:normal}
+#app .sports .broadcast-live-badge{font-size:8px}
+#app .sports .broadcast-live-badge:before{width:4px;height:4px}
+#app .markets{padding:4px 7px;gap:4px;grid-template-columns:.8fr 1.1fr 1.35fr}
+#app .markets>.market{min-height:34px;padding:3px;font-size:10px;line-height:1.15}
+#app .markets>.market>span+span{font-size:9px!important;line-height:10px!important}
+#app .data-notice{padding:0 9px;font-size:10px;line-height:1.4}
+#app .data-notice .feed-summary{margin:0;font-size:10px}
+#app .feed-summary>summary{min-height:25px;display:list-item;padding:5px 0;cursor:pointer;color:#777b92}
+#app .feed-summary>summary::marker{color:#A3C85A}
+#app .feed-summary-body{padding:4px 0 7px;overflow-wrap:anywhere}
+#app .feed-summary>summary{font-size:9px;white-space:nowrap}
+#app .feed-counts{margin-left:6px;font-size:9px;color:var(--ink);font-variant-numeric:tabular-nums}
+#app .fight-list-toolbar summary{font-size:9px}
+#app .source-brief{margin-left:5px;font-size:8px;color:var(--ink)}
+#app .summary-refresh,#app .source-quick-link{font:inherit;color:var(--blue);margin-left:4px;padding:0;text-decoration:underline;white-space:nowrap}
+@media(max-width:350px){#app .fight-list-toolbar summary{line-height:8px}#app .fight-list-toolbar{padding-top:4px;padding-bottom:4px}}
+#app .fight-list-toolbar .tournament-controls{font-size:9px}
+@media(max-width:350px){#app .feed-summary>summary,#app .feed-counts{font-size:8px}#app .fight-list-toolbar summary{font-size:8px}#app .source-brief{font-size:7px;margin-left:3px}#app .fight-list-toolbar .tournament-controls{font-size:8px}}
+#app .fight-list-toolbar{padding:4px 9px;font-size:10px;gap:5px;min-height:25px}
+#app .fight-list-toolbar .tournament-controls{white-space:normal;text-align:right}
+#app .search-box{padding:3px 9px 7px}
+#app .search-box input{padding:7px 9px;font-size:12px}
+#app .es-controls{padding:6px 9px}
+#app .es-games button{min-height:30px;padding:5px 8px;font-size:10px}
+#app .es-markets{margin-top:5px}
+#app .es-source{padding:4px 9px;gap:3px}
+@media(max-width:350px){#app .sports>.sport{font-size:9px}#app .sports>.sport svg{width:19px;height:19px}#app .mode{font-size:18px}#app .sports .broadcast-caption{gap:1px}#app .markets>.market{font-size:9px}}

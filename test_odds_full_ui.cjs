@@ -17,12 +17,15 @@ await page.waitForTimeout(700);
 await page.evaluate(()=>{
  document.getElementById('welcome-gate').remove();document.getElementById('app').inert=false;
  const e={id:'test',fighters:['Боец А','Боец Б'],sport:'mma',status:'prematch',title:'Тест',date:'',startTime:'2027-01-01T12:00:00Z',priceKey:'book',odds:[1.2,null,3],priceNote:'Тестовая БК'};
- FightScreen.setEvents([{...e,unavailable:true}]);
+ FightScreen.setEvents([e]);
+ document.querySelectorAll('details.tournament').forEach(d=>d.open=true);
+ window.oddsBefore=[...document.querySelectorAll('#events .odd')].map(b=>{const r=b.getBoundingClientRect();const s=getComputedStyle(b);return [r.x,r.y,r.width,r.height,s.fontSize,s.lineHeight]});
  FightScreen.setEvents([{...e,odds:[1.15,null,3.1]}]);
  document.querySelectorAll('details.tournament').forEach(d=>d.open=true);
 });
 console.log(await page.locator('#events').innerText());
 assert.equal(await page.locator('#events .odds-arrow').count(),2);
+assert.deepEqual(await page.locator('#events .odd').evaluateAll(bs=>bs.map(b=>{const r=b.getBoundingClientRect();const s=getComputedStyle(b);return [r.x,r.y,r.width,r.height,s.fontSize,s.lineHeight]})),await page.evaluate(()=>oddsBefore),'Movement must not resize or reposition cells');
 await page.screenshot({path:'.tools/odds-full.png'});
 }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});

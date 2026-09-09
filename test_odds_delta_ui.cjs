@@ -17,12 +17,13 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
    const e={id:'test',fighters:['Боец А','Боец Б'],priceKey:'book',odds:[2,null,3],title:'Тестовая линия',date:'',priceNote:'Тест без поставщика'};
    FightScreen.setEvents([{...e,unavailable:true}]);FightScreen.setEvents([{...e,odds:[2.15,null,2.9]}]);
   });
-  assert.deepEqual(await page.locator('.odds-arrow').allTextContents(),['2 → 2,15','3 → 2,9']);
+  assert.deepEqual(await page.locator('.odds-arrow').allTextContents(),['↑','↓']);
+  assert.equal(await page.locator('[data-index="0"]').first().evaluate(e=>e.firstChild.textContent),'2.15');
   await page.evaluate(()=>openFight('test'));
-  assert.deepEqual(await page.locator('#panel .odds-arrow').allTextContents(),['2 → 2,15','3 → 2,9']);
-  assert.equal(await page.locator('#panel .odds-down').evaluate(e=>getComputedStyle(e).color),'rgb(86, 122, 34)');
+  assert.deepEqual(await page.locator('#panel .odds-arrow').allTextContents(),['↑','↓']);
+  assert.equal(await page.locator('#panel .odds-down').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(241, 228, 235)');
   await page.screenshot({path:`.tools/odds-delta-${width}.png`});
   await page.close();
  }}finally{await browser.close()}
- console.log('PASS: delta labels in list and dialog at 320/390; cancellation palette');
+ console.log('PASS: edge arrows, current prices, rose decline in list and dialog at 320/390');
 })().catch(e=>{console.error(e);process.exit(1)});

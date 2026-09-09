@@ -1,0 +1,6 @@
+/* MMA and boxing share one solid schedule/navigation accent. */
+#app{--combat-accent:#397EAE}
+#app .header .sports:not(.broadcast-open)>.sport.active:is([data-sport="mma"],[data-sport="boxing"]){--sport-stroke:var(--combat-accent);color:var(--combat-accent)}
+#app .header .sports:not(.broadcast-open)>.sport.active:is([data-sport="mma"],[data-sport="boxing"]) .sport-label{background:none;color:var(--combat-accent);-webkit-text-fill-color:var(--combat-accent);text-decoration-color:var(--combat-accent)}
+#app #events time,#app #events .tournament-schedule{background:none;color:var(--combat-accent);-webkit-text-fill-color:var(--combat-accent)}
+@media(forced-colors:active){#app #events time,#app #events .tournament-schedule{color:CanvasText;-webkit-text-fill-color:CanvasText}}

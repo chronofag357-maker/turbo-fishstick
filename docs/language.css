@@ -1,0 +1,7 @@
+#app .language-switch{display:flex;gap:2px;flex-shrink:0}
+#app .language-switch button{padding:0 3px;min-width:22px;height:32px;font-size:9px;font-weight:600;color:#777b92;border-radius:3px}
+#app .language-switch button[aria-pressed=true]{background:var(--blue);color:white}
+#app .topbar{gap:5px}
+#app .modes{gap:9px}
+#app .topbar .icon-button{width:27px}
+@media(max-width:350px){#app .mode{font-size:16px}#app .modes{gap:7px}#app .topbar{padding-inline:5px;gap:3px}}

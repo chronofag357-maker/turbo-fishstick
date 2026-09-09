@@ -1,4 +1,14 @@
 // Only verified tournament membership is grouped; unknown bouts stay separate.
+window.fightSourceLinks = event => {
+  const row=document.createElement('span');row.className='fight-event-sources';
+  const card=event.cardInfo;
+  const urls=[{url:card?.source||'https://the-odds-api.com/sports/'+(event.sport==='mma'?'mma-ufc':'boxing')+'-odds.html'},...(card?.groupSource&&card.groupSource!==card.source?[{url:card.groupSource}]:[]),...(card?.supplementalSources||[])];
+  const seen=new Set();
+  for(const item of urls){try{const url=new URL(item.url);if(url.protocol!=='https:'||seen.has(url.href))continue;seen.add(url.href);
+    const a=document.createElement('a');a.href=url.href;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Источник · '+(item.name||url.hostname.replace(/^www\./,''))+(item.stale?' (кэш)':'')+' ↗';a.addEventListener('click',e=>e.stopPropagation());row.append(a);
+  }catch{}}
+  return row;
+};
 window.tournamentOriginalSuffix = (title, original) => {
   if(!original)return '';
   let suffix=original.trim();
@@ -29,6 +39,7 @@ window.sortTournamentGroups = groups => {
 
 (() => {
   const expanded = new Set();
+  const expandedSummaries=new Set();
   const notice=document.querySelector('.data-notice');
   const sourceDetails=notice.querySelector('details');
   const toolbar=document.createElement('div');toolbar.className='fight-list-toolbar';
@@ -129,6 +140,7 @@ window.sortTournamentGroups = groups => {
         const link=document.createElement('a');link.className='tournament-source-link';link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Доп. источник · '+extra.name+(extra.stale?' (кэш)':'')+' ↗';link.title=[extra.venue,extra.city].filter(Boolean).join(' · ');link.addEventListener('click',ev=>ev.stopPropagation());extraRow.append(link);text.append(extraRow);
         }catch{}
       }
+      text.querySelectorAll('.tournament-sources').forEach(row=>row.remove());
       if(first.sport==='boxing'){
         // Boxing goes directly to its fight card, without a nested tournament row.
         const fight=document.createElement('article');fight.className='tournament boxing-fight';
@@ -172,6 +184,18 @@ window.sortTournamentGroups = groups => {
           try{const url=new URL(event.cardInfo.source);if(url.protocol==='https:'){const link=document.createElement('a');link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='По сообщению '+(url.hostname==='sports.yahoo.com'?'Yahoo Sports':url.hostname.replace(/^www\./,''))+' ↗';note.replaceWith(link)}}catch{}
         }
         article.querySelector('.event-title')?.remove();
+        const sources=window.fightSourceLinks(event);
+        const metadata=article.querySelector('.line-source')||article.querySelector('.event-head time');
+        if(metadata)metadata.append(sources);else article.prepend(sources);
+        if(metadata?.classList.contains('line-source')&&!event.cardInfo?.cancelled){
+          const disclosure=document.createElement('details');disclosure.className='fight-inline-summary';disclosure.open=expandedSummaries.has(event.id);
+          const trigger=document.createElement('summary');trigger.textContent='Сводка событий';
+          const time=article.querySelector('.event-head time');
+          if(time){const cell=document.createElement('div');cell.className='fight-time-cell';time.replaceWith(cell);cell.append(time,disclosure);}
+          else metadata.before(disclosure);
+          disclosure.append(trigger,metadata);
+          disclosure.addEventListener('toggle',()=>{if(!disclosure.isConnected)return;if(disclosure.open)expandedSummaries.add(event.id);else expandedSummaries.delete(event.id);});
+        }
         article.setAttribute('aria-label',event.fighters.join(' — '));
         content.append(article);
       }

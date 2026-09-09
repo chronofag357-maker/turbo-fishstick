@@ -90,7 +90,9 @@
 body:has(#welcome-gate:not([hidden])){overflow:hidden}
 #welcome-gate{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,450px);z-index:90;display:grid;place-items:center;background:rgba(255,255,255,.68);-webkit-backdrop-filter:blur(3.5px);backdrop-filter:blur(3.5px);color:#111;font-family:Arial,Helvetica,sans-serif}
 #welcome-gate[hidden]{display:none}
-#welcome-gate{background:rgba(8,10,13,var(--welcome-tint,.58));color:#fff}
+#welcome-gate{background-color:rgba(23,27,54,.8);background-image:linear-gradient(to bottom,rgba(0,0,0,0) -10%,rgba(0,0,0,.07) 2%,rgba(0,0,0,.2) 14%,rgba(0,0,0,.38) 26%,rgba(0,0,0,.57) 38%,rgba(0,0,0,.73) 50%,rgba(0,0,0,.85) 62%,rgba(0,0,0,.92) 74%,rgba(0,0,0,.94) 80%,rgba(0,0,0,.96) 100%);color:#fff}
+#welcome-gate::before,#welcome-gate::after{display:none}
+#panel.welcome-auth::backdrop{background:transparent}
 #welcome-gate{overflow:hidden}
 #welcome-gate::before,#welcome-gate::after{content:"";position:absolute;pointer-events:none;top:50%;left:38%;width:var(--ray-width,140px);height:var(--ray-length,130%);transform:translate(-50%,-50%) rotate(30deg);background:linear-gradient(90deg,transparent,rgba(210,218,228,.06) 25%,rgba(240,244,250,.24) 52%,rgba(179,190,204,.07) 72%,transparent);filter:blur(var(--ray-blur,3px));-webkit-mask-image:linear-gradient(transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(transparent,#000 12%,#000 88%,transparent)}
 #welcome-gate::after{left:85%;width:calc(var(--ray-width,140px)*.45);opacity:.55}

@@ -38,7 +38,7 @@ async def cors_middleware(request: web.Request, handler):
         response = await handler(request)
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-    response.headers["Cache-Control"] = "no-store" if request.path == '/api/odds' else "public, max-age=120"
+    response.headers["Cache-Control"] = "no-store" if request.path in ('/api/odds', '/api/esports') else "public, max-age=120"
     return response
 
 
@@ -52,6 +52,18 @@ async def get_events(request: web.Request) -> web.Response:
 
 async def health(request: web.Request) -> web.Response:
     return web.json_response({"status": "ok"})
+
+
+async def esports(request: web.Request) -> web.Response:
+    from bot.services.esports_feed import get_feed
+    from bot.config import settings
+    from urllib.parse import urlsplit
+    # Public reads never force paid refresh. Preview can refresh only on loopback.
+    # Nginx also connects over loopback: disable that exception on a public deployment.
+    local_deployment = urlsplit(settings.mini_app_url).hostname in ('localhost', '127.0.0.1', '::1')
+    refresh = request.path.startswith('/api/private/') or (
+        local_deployment and request.remote in ('127.0.0.1', '::1') and request.query.get('refresh') == '1')
+    return web.json_response(await get_feed(refresh), headers={'Cache-Control': 'no-store'})
 
 
 async def odds(request: web.Request) -> web.Response:
@@ -88,6 +100,8 @@ def create_app() -> web.Application:
     app = web.Application(middlewares=[cors_middleware, private_middleware], client_max_size=32768)
     install(app)
     app.router.add_get("/api/health", health)
+    app.router.add_get("/api/esports", esports)
+    app.router.add_post("/api/private/esports-refresh", esports)
     app.router.add_get("/api/odds", odds)
     app.router.add_get("/api/events", get_events)
     app.router.add_route("OPTIONS", "/api/events", lambda _r: web.Response())

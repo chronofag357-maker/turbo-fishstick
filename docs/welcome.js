@@ -222,9 +222,13 @@
   });
   const localPreview=['127.0.0.1','localhost','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('preview')==='1'&&!window.ServerAccount?.enabled;
   let previewEntered=false;
+  if(localPreview){try{if(sessionStorage.getItem('p2p-local-preview-entered')==='1'){
+    window.localPreviewProfile={name:'Ла Марсель'};freebkDemoPartner='Марсель Ла';freebkDemoSignedIn=true;
+  }}catch{}}
   const signedIn=()=>window.ServerAccount?.enabled ? !!window.ServerAccount.current : typeof freebkDemoSignedIn!=='undefined' && freebkDemoSignedIn;
   function sync(){
     const entered=signedIn();
+    if(localPreview){try{if(entered)sessionStorage.setItem('p2p-local-preview-entered','1');else sessionStorage.removeItem('p2p-local-preview-entered');}catch{}}
     gate.hidden=entered;
     app.inert=!entered;
     if(entered && dialog.classList.contains('welcome-auth'))dialog.close();
@@ -232,38 +236,90 @@
   }
   login.addEventListener('click',()=>{
     dialog.classList.add('welcome-auth');
-    const height=Math.max(120,(window.visualViewport?.height||innerHeight)-login.getBoundingClientRect().bottom-16);
+    const viewport=window.visualViewport?.height||innerHeight;
+    const available=viewport-brand.getBoundingClientRect().bottom-12;
+    const height=Math.max(0,available);
     dialog.style.setProperty('--welcome-sheet-height',height+'px');
-    panel('Профиль',`<div class="account-menu welcome-guest-card"><div class="welcome-guest-avatar"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="10" r="6"/><path d="M5 30c0-14 22-14 22 0"/></svg></div><strong class="welcome-guest-name">Гость</strong><p class="welcome-id-hint">Вход по Telegram ID</p><div class="welcome-code-row"><input data-code-source readonly aria-label="Сгенерированный код" placeholder="Код"><button data-code-generate>Генератор кода</button><button data-code-copy>Скопировать</button></div><input class="welcome-code-input" data-code-entry inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Вставьте код" placeholder="Вставьте код"><div class="welcome-verify" hidden><div class="welcome-verify-label">Проведите для входа <output>0%</output></div><input type="range" min="0" max="100" value="0" aria-label="Подтверждение входа" data-verify-slider></div><button hidden class="welcome-id-entry" ${window.ServerAccount?.enabled?'data-server-login':'data-welcome-telegram'}>Войти через Telegram</button><p class="menu-demo-message" role="status"></p></div>`);
-    dialog.classList.add('hamburger-sheet');
-    dialog.querySelector(':scope > .welcome-guest-avatar')?.remove();
-    dialog.append(dialog.querySelector('.welcome-guest-card .welcome-guest-avatar'));
-    dialog.querySelector(':scope > .welcome-guest-heading')?.remove();
-    const heading=document.createElement('div');heading.className='welcome-guest-heading';
-    heading.innerHTML='<strong>Гость:</strong> <span>Вход по Telegram ID</span>';
-    dialog.append(heading);
-    dialog.querySelector('.welcome-guest-name')?.remove();
-    dialog.querySelector('.welcome-id-hint')?.remove();
-    const source=dialog.querySelector('[data-code-source]'),entry=dialog.querySelector('[data-code-entry]'),verify=dialog.querySelector('.welcome-verify'),range=dialog.querySelector('[data-verify-slider]'),status=dialog.querySelector('.menu-demo-message');
-    let code='',attempted=false,drag=null;
-    source.placeholder='Code';
-    const hint=document.createElement('span');hint.className='welcome-verify-hint';hint.textContent='Проведите для входа';
-    verify.querySelector('.welcome-verify-label').firstChild.replaceWith(hint);
-    verify.hidden=false;range.disabled=true;verify.classList.remove('is-ready');
-    dialog.querySelector('[data-code-generate]').textContent='Генерация кода';
+    panel('Вход',`<div class="account-menu welcome-coupon">
+      <button type="button" class="auth-generate" data-code-generate><span class="auth-placeholder">Генерация кода</span><span class="auth-card-end" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M6 12a10 10 0 0 1 20 0M3 17v-3M29 14v3M8 27c3-4 3-8 3-13a5 5 0 0 1 10 0c0 7-1 12-4 16M5 23c2-3 2-6 2-9a9 9 0 0 1 18 0c0 5 0 8-2 12M12 29c3-5 3-10 3-15a1 1 0 0 1 2 0c0 4 0 8-1 11M26 22l1-4"/></svg></span></button>
+      <div class="auth-quote"><output data-code-source aria-label="Код для входа" aria-live="polite"></output><span class="auth-card-end auth-lock" role="img" aria-label="Код не подтверждён"><svg viewBox="0 0 32 32" aria-hidden="true"><path class="auth-lock-shackle" d="M8 20V11a8 8 0 0 1 16 0v5"/><rect x="5" y="15" width="22" height="15" rx="3"/></svg></span></div>
+      <div class="auth-entry-row"><input data-code-entry readonly inputmode="none" aria-label="Введите сгенерированный код" placeholder="Введите сгенерированный код"><span class="auth-entry-caret" aria-hidden="true"></span><span data-auth-percent>0%</span></div>
+<div class="auth-keypad" aria-label="Цифровая клавиатура">${['1','2','3','4','5','6','7','8','9','0','⌫'].map(k=>`<button type="button" data-auth-key="${k}" aria-label="${k==='⌫'?'Удалить цифру':k}">${k==='⌫'?'<svg class="auth-backspace-icon" viewBox="0 0 28 24" aria-hidden="true"><path d="M10 4H25V20H10L2 12Z"/><path d="m14 9 6 6m0-6-6 6"/></svg>':k}</button>`).join('')}<span class="auth-dial-dots" aria-hidden="true"><svg viewBox="0 0 24 30"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="12" cy="26" r="2"/></svg></span></div>
+      <div class="auth-slide"><div class="auth-trail"></div><span class="auth-slide-hint">← Проведите до конца</span><button type="button" data-verify-slider role="slider" aria-label="Заключить пари — вход" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" disabled>Заключить пари</button></div>
+      <button hidden class="welcome-id-entry" ${window.ServerAccount?.enabled?'data-server-login':'data-welcome-telegram'}>Войти через Telegram</button><p class="menu-demo-message" role="status"></p>
+    </div>`);
+    dialog.classList.add('hamburger-sheet','welcome-coupon-sheet');
+    const source=dialog.querySelector('[data-code-source]'),entry=dialog.querySelector('[data-code-entry]'),range=dialog.querySelector('[data-verify-slider]'),status=dialog.querySelector('.menu-demo-message'),verify=dialog.querySelector('.auth-slide'),keypad=dialog.querySelector('.auth-keypad');
+    let code='',attempted=false,drag=null,typed='',busy=false;
+    range.value='0';
     brand.querySelector('.welcome-login-fill')?.remove();
     const fill=glint.cloneNode(true);fill.classList.remove('welcome-glint');fill.classList.add('welcome-login-fill');fill.style.cssText='';brand.append(fill);
-    function progress(n){range.value=String(n);range.style.setProperty('--verify-progress',n+'%');hint.style.opacity=String(Math.max(0,1-n/20));verify.querySelector('output').style.opacity=String(Math.min(1,(100-n)/10));verify.querySelector('output').textContent=n+'%';fill.style.clipPath='inset(0 '+(100-n)+'% 0 0)';if(n===100)complete();}
-    function reset(){attempted=false;progress(0);}
-    dialog.querySelector('[data-code-generate]').addEventListener('click',()=>{code=String(1000+crypto.getRandomValues(new Uint32Array(1))[0]%9000);source.value=code;entry.value='';range.disabled=true;verify.classList.remove('is-ready');status.textContent='';reset();});
-    dialog.querySelector('[data-code-copy]').addEventListener('click',async()=>{if(!code)return;try{await navigator.clipboard.writeText(code);status.textContent='Код скопирован';}catch{source.focus();source.select();status.textContent='Скопируйте выделенный код вручную';}});
-    entry.addEventListener('input',()=>{range.disabled=!code||entry.value!==code;verify.classList.toggle('is-ready',!range.disabled);reset();status.textContent='';});
-    function complete(){if(Number(range.value)!==100||attempted||entry.value!==code)return;attempted=true;dialog.querySelector('.welcome-id-entry').click();setTimeout(()=>{if(dialog.open){attempted=false;}},1000);}
-    range.addEventListener('pointerdown',e=>{if(range.disabled)return;const rect=range.getBoundingClientRect(),thumb=rect.left+22+(rect.width-44)*Number(range.value)/100;e.preventDefault();if(Math.abs(e.clientX-thumb)>24)return;drag=e.pointerId;range.setPointerCapture(e.pointerId);});
-    range.addEventListener('pointermove',e=>{if(drag!==e.pointerId)return;const rect=range.getBoundingClientRect();progress(Math.max(0,Math.min(100,Math.round((e.clientX-rect.left-22)/(rect.width-44)*100))));});
-    range.addEventListener('pointerup',e=>{if(drag!==e.pointerId)return;drag=null;complete();});
-    range.addEventListener('pointercancel',()=>{drag=null;});
-    range.addEventListener('input',()=>progress(Number(range.value)));
+    const format=n=>n.toFixed(2);
+    function progress(n){
+      range.value=String(n);range.setAttribute('aria-valuenow',String(n));
+      const travel=verify.clientWidth-range.offsetWidth;
+      range.style.transform='translateX('+(-travel*n/100)+'px)';
+      verify.style.setProperty('--auth-progress',n+'%');
+      dialog.querySelector('[data-auth-percent]').textContent=n+'%';
+      entry.value=n?format(Number(code.replace(',','.'))*(1+n/100)):typed;
+      entry.parentElement.classList.toggle('is-empty',!entry.value);
+      entry.parentElement.classList.toggle('is-awaiting-code',!code);
+      fill.style.clipPath='inset(0 '+(100-n)+'% 0 0)';
+    }
+    function updateEntry(){
+      entry.value=typed;range.disabled=!code||typed!==code||busy;
+      verify.classList.toggle('is-ready',!range.disabled);
+      dialog.querySelector('.auth-entry-row').classList.toggle('is-ready',!range.disabled);
+      const lock=dialog.querySelector('.auth-lock');
+      lock.classList.toggle('is-unlocked',!range.disabled);
+      lock.setAttribute('aria-label',range.disabled?'Код не подтверждён':'Код подтверждён');
+      progress(0);status.textContent='';
+    }
+    const generator=dialog.querySelector('[data-code-generate]');
+    const rolling=generator.querySelector('.auth-placeholder');
+    generator.disabled=true;generator.setAttribute('aria-label','Генерация кода');
+    rolling.classList.add('auth-rolling-code');rolling.setAttribute('aria-hidden','true');
+    const randomCode=()=>format((110+crypto.getRandomValues(new Uint32Array(1))[0]%790)/100);
+    rolling.textContent=randomCode();
+    keypad.querySelectorAll('button').forEach(b=>b.disabled=true);
+    const shuffle=reduced.matches?null:setInterval(()=>{rolling.textContent=randomCode();},80);
+    const finishGeneration=setTimeout(()=>{
+      clearInterval(shuffle);
+      if(!dialog.open||!source.isConnected)return;
+      code=randomCode();rolling.textContent=code;
+      generator.classList.add('is-generated');
+      dialog.querySelector('.auth-quote').classList.add('is-generated');
+      source.textContent=code;typed='';attempted=false;
+      keypad.querySelectorAll('button').forEach(b=>b.disabled=false);
+      updateEntry();entry.focus({preventScroll:true});
+    },3000);
+    dialog.addEventListener('close',()=>{clearInterval(shuffle);clearTimeout(finishGeneration);},{once:true});
+    function key(k){
+      if(!code||busy)return;
+      let digits=typed.replace(/\D/g,'');
+      if(k==='⌫')digits=digits.slice(0,-1);
+      else if(/^\d$/.test(k)&&digits.length<3)digits+=k;
+      typed=digits?digits[0]+'.'+digits.slice(1):'';
+      updateEntry();
+    }
+    keypad.addEventListener('click',e=>{const b=e.target.closest('[data-auth-key]');if(b)key(b.dataset.authKey);});
+    entry.addEventListener('keydown',e=>{if(/^[0-9.,]$/.test(e.key)||e.key==='Backspace'){e.preventDefault();key(e.key==='Backspace'?'⌫':e.key);}});
+    function complete(){
+      if(Number(range.value)!==100||attempted||typed!==code||!code)return;
+      attempted=true;busy=true;range.disabled=true;status.textContent='Проверяем Telegram ID…';
+      dialog.querySelector('.welcome-id-entry').click();
+      function release(){
+        if(!dialog.open||!range.isConnected)return;
+        if(dialog.querySelector('.welcome-id-entry').disabled){setTimeout(release,250);return;}
+        attempted=false;busy=false;progress(0);range.disabled=false;
+      }
+      setTimeout(release,1500);
+    }
+    range.addEventListener('pointerdown',e=>{if(range.disabled||busy)return;e.preventDefault();drag={id:e.pointerId,x:e.clientX,n:Number(range.value)};range.setPointerCapture(e.pointerId);});
+    range.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;const travel=verify.clientWidth-range.offsetWidth;progress(Math.max(0,Math.min(100,Math.round(drag.n+(drag.x-e.clientX)/travel*100))));});
+    range.addEventListener('pointerup',e=>{if(drag?.id!==e.pointerId)return;drag=null;complete();});
+    range.addEventListener('pointercancel',()=>{drag=null;progress(0);});
+    range.addEventListener('keydown',e=>{if(range.disabled)return;if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();progress(e.key==='Home'?0:e.key==='End'?100:Math.max(0,Math.min(100,Number(range.value)+(e.key==='ArrowLeft'?5:-5))));}});
     range.addEventListener('keyup',()=>complete());
     progress(0);
     dialog.querySelector('[data-welcome-telegram]')?.addEventListener('click',async()=>{
@@ -287,7 +343,8 @@
     dialog.querySelector(':scope > .welcome-guest-avatar')?.remove();
     dialog.querySelector(':scope > .welcome-guest-heading')?.remove();
     brand.querySelector('.welcome-login-fill')?.remove();
-    dialog.classList.remove('welcome-auth');
+    dialog.classList.remove('welcome-auth','welcome-coupon-sheet');
+    gate.querySelector('.welcome-content').style.transform='';
     if(!gate.hidden)login.focus({preventScroll:true});
   });
   window.addEventListener('freebk-account-change',sync);

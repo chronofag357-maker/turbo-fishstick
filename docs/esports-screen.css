@@ -1,0 +1,39 @@
+#app .sports{grid-template-columns:1.25fr .65fr 1.1fr 1.1fr;padding-inline:6px}
+#app{--es-accent:#A04DA5}
+#app .header .sports>[data-sport="esports"]{--sport-stroke:#777b92}
+#app .header .sports:not(.broadcast-open)>[data-sport="esports"].active{--sport-stroke:var(--es-accent)}
+#app .header .sports>[data-sport="esports"] svg{stroke-width:1.8;stroke:var(--sport-stroke);color:var(--sport-stroke)}
+#app .header .sports:not(.broadcast-open)>[data-sport="esports"].active .sport-label{background:none;color:var(--es-accent);-webkit-text-fill-color:var(--es-accent);text-decoration-color:var(--es-accent)}
+#app #esports-events .es-title time{background:none;color:var(--es-accent);-webkit-text-fill-color:var(--es-accent)}
+#app #esports-events .es-title strong,#app #esports-events .es-details>strong{color:var(--es-accent)}
+#app #esports-events .es-teams strong{color:var(--ink);font-weight:700}
+#app #esports-events .es-games button[aria-pressed=true]{background:#F5EAF6;color:var(--es-accent)}
+#app #esports-events .es-markets button[aria-pressed=true]{background:var(--blue);color:white}
+#app #esports-events .es-details>small{color:var(--es-accent)}
+#app .sports>.sport{font-size:11px;white-space:normal;text-align:center;line-height:1.15;gap:7px}
+#app .sports .broadcast-caption{gap:2px}
+.es-controls{padding:10px 12px;border-bottom:1px solid var(--line)}
+.es-games{display:flex;flex-wrap:wrap;gap:5px}
+.es-games button{min-height:36px;padding:7px 10px;border-radius:5px;background:#eaeaf1;color:#686e85;font-size:11px;font-weight:700}
+.es-games button[aria-pressed=true]{background:#E6F0CD;color:#567A22}
+.es-markets{margin-top:8px}.es-markets button{flex:1;border-radius:3px}
+#app #esports-events .es-markets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+#app #esports-events .es-markets button{min-width:0;padding:5px 2px;font-size:9px;line-height:1.2}
+.es-markets button[aria-pressed=true]{background:var(--blue);color:white}
+.es-source{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;color:#777b92;font-size:11px;border-bottom:1px solid var(--line)}
+.es-source>button{margin-left:auto;min-height:36px;color:var(--blue)}
+.es-source>small,.es-source>details{width:100%;font-size:10px;line-height:1.5}.es-source summary::marker{color:#A3C85A}
+.es-card{border-bottom:1px solid var(--line)}
+.es-title{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:58px;padding:8px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.es-title time{display:block;font-size:11px;font-weight:800;color:#397EAE;background:linear-gradient(100deg,#397EAE,#5797C2 55%,#70963D);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.es-title strong{display:block;margin-top:5px;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.es-chevron{font-size:22px;color:#777b92}.es-match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-height:80px}
+.es-teams{background:white;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:10px 12px;font-size:12px;overflow-wrap:anywhere}
+.es-teams strong{font-weight:500}.es-teams small{font-size:10px;color:#777b92}
+.es-prices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:stretch;background:#f5f5f9}
+.es-price{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 3px;text-align:center;border-left:1px solid var(--line);font-variant-numeric:tabular-nums}
+.es-price small{font-size:10px;color:#777b92;overflow-wrap:anywhere}.es-price strong{font-size:17px;font-weight:750}
+.es-no-line{grid-column:1/-1;align-self:center;text-align:center;padding:10px;font-size:11px;color:#777b92}
+.es-muted{display:block;padding:4px 12px;font-size:10px;color:#777b92}
+.es-details{padding:10px 12px;font-size:11px;line-height:1.6;overflow-wrap:anywhere;background:white}.es-details>strong{display:block;margin-top:6px}.es-details>small{display:block;margin-top:8px;color:#777b92}
+@media(max-width:350px){#app .sports>.sport{font-size:10px}.es-games button{padding-inline:8px}}

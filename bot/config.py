@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=(".env", ".env.esports"), env_file_encoding="utf-8")
 
     bot_token: str
     admin_ids: str = ""
@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     contact_username: str = ""
     boxing_data_api_key: str = ""
     odds_api_key: str = ""
+    api_sport_key: str = ""
     mini_app_api_port: int = 8080
     # Disabled until the private media service is provisioned and verified.
     livekit_enabled: bool = False
