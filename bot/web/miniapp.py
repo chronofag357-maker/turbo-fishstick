@@ -170,6 +170,11 @@ async def place(request):
     feeds = {}
     verified = []
     for p in picks:
+        if p['sport'] == 'esports':
+            from bot.services.esports_live import live
+            from bot.services.esports_pick import verified_esports_pick
+            verified.append(verified_esports_pick(p, live.present(), time.time()))
+            continue
         if p['sport'] not in SPORTS:
             raise ValueError()
         if p['sport'] not in feeds:
@@ -230,9 +235,12 @@ async def result(request):
     # Only settle market references and participants from accepted server snapshots.
     report_data = await call(store.report)
     matching = [p for a in report_data['accounts'] for b in a['bets'] for p in b['picks'] if store.result_key(p) == key]
-    if not matching or value not in {'void', 'Draw', 'Over', 'Under', *matching[0]['fighters']}:
+    if not matching:
         raise ValueError()
-    allowed = {'void', 'Over', 'Under'} if matching[0]['kind'] == 'totals' else {'void', 'Draw', *matching[0]['fighters']}
+    if matching[0].get('sport') == 'esports':
+        allowed = {'void', *matching[0].get('resultOptions', [])}
+    else:
+        allowed = {'void', 'Over', 'Under'} if matching[0]['kind'] == 'totals' else {'void', 'Draw', *matching[0]['fighters']}
     if value not in allowed or data.get('confirmed') is not True:
         raise ValueError()
     return web.json_response({'settled': await call(store.confirm_result, request['identity']['id'], key, value, source)})

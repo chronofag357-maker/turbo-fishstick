@@ -81,7 +81,7 @@
       label:kind==='outcomes'?['Победа: '+e.fighters[0],'Ничья','Победа: '+e.fighters[1]][index]:(index===1?'Больше ':'Меньше ')+e.totals.line+' раундов',
       line:kind==='totals'?e.totals.line:null,source:kind==='outcomes'?e.priceNote:e.totalNote,sourceKey:kind==='outcomes'?e.priceKey:e.totalKey};
   }
-  const latest=p=>snapshot(events.find(e=>e.id===p.id),p.kind,p.index);
+  const latest=p=>p.sport==='esports'?window.EsportsFeed?.snapshot(p):snapshot(events.find(e=>e.id===p.id),p.kind,p.index);
   const changed=(a,b)=>!b||a.value!==b.value||a.sourceKey!==b.sourceKey||a.line!==b.line||a.fighters.join('|')!==b.fighters.join('|');
   const total=()=>[...picks.values()].reduce((n,p)=>n*p.value,1);
   function amount(){const v=stake.trim().replace(',','.');return /^\d+(?:\.\d{1,2})?$/.test(v)?Math.round(Number(v)*100):0}
@@ -89,6 +89,7 @@
     if(!account())return 'Войдите в профиль, чтобы оформить пари.';
     if([...picks.values()].some(p=>!latest(p)))return 'Один из исходов недоступен. Удалите его из купона.';
     if([...picks.values()].some(p=>changed(p,latest(p))))return 'Линия изменилась. Проверьте и примите новые коэффициенты.';
+    if([...picks.values()].some(p=>p.sport==='esports'&&!window.EsportsFeed?.fresh(p)))return 'Запустите Live-обновление киберспорта перед оформлением.';
     if(!amount())return 'Введите сумму от 1 000 до 10 000, не более двух знаков после запятой.';
     if(amount()<100000)return 'Минимальная сумма — 1 000.';
     if(amount()>1000000)return 'Максимальная сумма — 10 000.';
@@ -129,6 +130,12 @@
     selected.clear();for(const p of picks.values())selected.set(p.id+p.kind+p.index,p);
   }
   const baseRender=render;
+  let lastEsportsSignature='';
+  window.EsportsCoupon={
+    selected:p=>{const old=picks.get(p.id);return !!old&&old.kind===p.kind&&old.stakeKey===p.stakeKey&&old.line===p.line;},
+    toggle:p=>{if(submitting||!p)return;const old=picks.get(p.id);if(window.EsportsCoupon.selected(p))picks.delete(p.id);else picks.set(p.id,p);notice='';if(picks.size===1&&!old)expanded=true;render();},
+    update:()=>{const signature=JSON.stringify([...picks.values()].filter(p=>p.sport==='esports').map(p=>latest(p)));if(signature!==lastEsportsSignature){lastEsportsSignature=signature;sync();draw();}else if(picks.size)summary();}
+  };
   render=function(){sync();baseRender();draw()};
   function toggle(id,kind,index){
     if(submitting)return;
@@ -151,7 +158,7 @@
     if(!picks.size)return;
     const issue=validity();if(issue){notice=issue;draw();return;}
     if(window.ServerAccount?.enabled){
-      const body={stake:amount(),picks:[...picks.values()].map(p=>({id:p.id,sport:p.sport,kind:p.kind,index:p.index,value:p.value,line:p.line,sourceKey:p.sourceKey}))};
+      const body={stake:amount(),picks:[...picks.values()].map(p=>({id:p.id,sport:p.sport,kind:p.kind,index:p.index,value:p.value,line:p.line,sourceKey:p.sourceKey,stakeKey:p.stakeKey}))};
       const signature=JSON.stringify(body);
       const pendingKey='p2p-pending-submission:'+account();
       if(signature!==requestBody){

@@ -37,6 +37,38 @@ class PrivateAPITests(unittest.IsolatedAsyncioTestCase):
             p.stop()
         self.tmp.cleanup()
 
+    async def test_esports_express_idempotency_and_server_settlement(self):
+        import time
+        from test_esports_live import message
+        from bot.services.esports_live import LiveFeed
+        live = LiveFeed()
+        live.apply(message())
+        second = message(1.5)
+        second['matchId'] = 2
+        live.apply(second)
+        state = {'events': list(live.events.values()), 'fetched_at': time.time()}
+        picks = [{'id': 'apisport-'+str(i), 'sport': 'esports', 'kind': 'result', 'index': 0,
+                  'stakeKey': 'w1', 'sourceKey': 'pari', 'value': value, 'line': None} for i, value in [(1, 2), (2, 1.5)]]
+        body = {'key': 'esports-test-request-1', 'stake': 100000, 'picks': picks}
+        with patch('bot.services.esports_live.live.present', return_value=state):
+            r = await self.client.post('/api/private/bets', json=body, headers=self.headers(self.other))
+            self.assertEqual(r.status, 200, await r.text())
+            bet = await r.json()
+            self.assertEqual(bet['odds'], 3)
+            repeat = await self.client.post('/api/private/bets', json=body, headers=self.headers(self.other))
+            self.assertEqual((await repeat.json())['id'], bet['id'])
+            bad = {**body, 'key': 'esports-test-request-2', 'picks': [{**picks[0], 'value': 99}]}
+            r = await self.client.post('/api/private/bets', json=bad, headers=self.headers(self.other))
+            self.assertEqual(r.status, 409)
+        for p in bet['picks']:
+            r = await self.client.post('/api/private/admin/result', json={'key': p['resultKey'], 'result': 'w1',
+                'source': 'https://example.com/result', 'confirmed': True}, headers=self.headers(self.owner))
+            self.assertEqual(r.status, 200, await r.text())
+        r = await self.client.get('/api/private/me', headers=self.headers(self.other))
+        account = await r.json()
+        self.assertEqual(account['balance'], 458000)
+        self.assertEqual(account['bets'][0]['status'], 'won')
+
     def headers(self, token):
         return {'Authorization': 'Bearer '+token}
 

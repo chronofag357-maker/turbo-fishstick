@@ -38,7 +38,7 @@ async def cors_middleware(request: web.Request, handler):
         response = await handler(request)
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-    response.headers["Cache-Control"] = "no-store" if request.path in ('/api/odds', '/api/esports') else "public, max-age=120"
+    response.headers["Cache-Control"] = "no-store" if request.path in ('/api/odds', '/api/esports', '/api/esports-live') else "public, max-age=120"
     return response
 
 
@@ -77,6 +77,23 @@ async def odds(request: web.Request) -> web.Response:
     return await format_odds(result, sport)
 
 
+async def esports_live(request):
+    from bot.services.esports_live import live
+    from bot.config import settings
+    from urllib.parse import urlsplit
+    if not request.path.startswith('/api/private/'):
+        if request.remote not in ('127.0.0.1', '::1') or urlsplit(settings.mini_app_url).hostname not in ('localhost', '127.0.0.1', '::1'):
+            raise web.HTTPForbidden()
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise web.HTTPBadRequest()
+    viewer = body.get('viewer')
+    if not isinstance(viewer, str) or not 1 <= len(viewer) <= 80:
+        raise web.HTTPBadRequest()
+    key = (request.get('identity', {}).get('id', 'local'), viewer)
+    return web.json_response(await live.touch(key, stop=body.get('stop') is True), headers={'Cache-Control': 'no-store'})
+
+
 async def format_odds(result, sport):
     if sport == 'mma' and result.get('events'):
         from bot.services.tournament_metadata import enrich
@@ -102,6 +119,12 @@ def create_app() -> web.Application:
     app.router.add_get("/api/health", health)
     app.router.add_get("/api/esports", esports)
     app.router.add_post("/api/private/esports-refresh", esports)
+    app.router.add_post("/api/private/esports-live", esports_live)
+    app.router.add_post("/api/esports-live", esports_live)
+    async def close_live(_app):
+        from bot.services.esports_live import live
+        await live.close()
+    app.on_cleanup.append(close_live)
     app.router.add_get("/api/odds", odds)
     app.router.add_get("/api/events", get_events)
     app.router.add_route("OPTIONS", "/api/events", lambda _r: web.Response())

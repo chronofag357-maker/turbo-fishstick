@@ -153,7 +153,10 @@ class Store:
 
     @staticmethod
     def result_key(p):
-        return json.dumps([p['id'], p['sourceKey'], p['marketKey'], p.get('line')], separators=(',', ':'))
+        parts = [p['id'], p['sourceKey'], p['marketKey'], p.get('line')]
+        if p.get('sport') == 'esports' and p.get('kind') == 'handicap':
+            parts.append(p['stakeKey'])  # Handicaps are relative to the selected team.
+        return json.dumps(parts, separators=(',', ':'))
 
     def place(self, uid, key, digest, stake, picks):
         if type(stake) is not int or not 100000 <= stake <= 1000000 or not 1 <= len(picks) <= 20:

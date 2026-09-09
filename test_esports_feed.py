@@ -37,12 +37,14 @@ class EsportsTests(unittest.IsolatedAsyncioTestCase):
             await feed.get_feed(True)
             self.assertEqual(fetch.await_count, 1)
 
-    async def test_budget_survives_restart(self):
+    async def test_daily_budget_removed_and_public_read_free(self):
         from datetime import datetime, timezone
         feed.save_cache({'events': [], 'day': datetime.now(timezone.utc).date().isoformat(), 'requests': 10})
-        with patch.object(feed, 'fetch_matches', AsyncMock()) as fetch:
-            await feed.get_feed(True)
+        with patch.object(feed, 'fetch_matches', AsyncMock(return_value={'events': []})) as fetch:
+            await feed.get_feed()
             fetch.assert_not_called()
+            await feed.get_feed(True)
+            self.assertEqual(fetch.await_count, 1)
 
     def test_prices_names_and_inactive_market(self):
         match={'id': 5, 'status': 'finished', 'homeTeam': {'name': '<Team>'},

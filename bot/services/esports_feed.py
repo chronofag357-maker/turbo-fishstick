@@ -1,4 +1,4 @@
-"""API-Sport trial: one bookmaker, shared persistent cache, no background polling."""
+"""API-Sport REST seed: one bookmaker, explicit refresh, no daily app quota."""
 import asyncio
 import json
 import math
@@ -13,8 +13,7 @@ BASE = 'https://api.api-sport.ru/v2'
 BOOK = 'pari'
 CACHE = Path(__file__).resolve().parents[2] / 'data' / 'esports-feed.json'
 LOCK = asyncio.Lock()
-COOLDOWN = 1800
-DAILY_BUDGET = 10
+COOLDOWN = 2  # Coalesce simultaneous viewers; not a daily usage quota.
 
 
 def read_cache():
@@ -87,15 +86,16 @@ async def get_feed(refresh=False):
         count = state.get('requests', 0) if state.get('day') == day else 0
         if not settings.api_sport_key:
             return {**state, 'events': state.get('events', []), 'error': 'Ключ API-Sport не настроен.'}
-        if (state and not refresh) or now-state.get('attempt', 0) < COOLDOWN or count >= DAILY_BUDGET:
+        if not refresh or now < state.get('retry_at', 0) or now-state.get('attempt', 0) < COOLDOWN:
             return {**state, 'events': state.get('events', []), 'cached': True,
-                    'message': 'Сохранённая линия. Интервал обновления 30 минут; тестовый бюджет — 10 запросов в сутки.'}
+                    'message': 'Сохранённая линия. Нажмите «Обновить», чтобы запустить Live.'}
         state.update(attempt=now, day=day, requests=count+1, bookmaker=BOOK)
         save_cache(state)  # Count failed attempts too; restarting cannot reset the budget.
         try:
             data = await fetch_matches()
-            state.update(data, fetched_at=now, error=None)
+            state.update(data, fetched_at=time.time(), error=None, retry_at=0)
         except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as exc:
             state['error'] = str(exc) if isinstance(exc, ValueError) else 'Нет ответа API-Sport. Сохранённые данные оставлены.'
+            state['retry_at'] = time.time()+60
         save_cache(state)
         return {**state, 'events': state.get('events', [])}
