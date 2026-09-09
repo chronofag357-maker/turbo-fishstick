@@ -24,7 +24,7 @@
     return {id:e.id,sport:'esports',kind:m.key,index:0,stakeKey:s.key,line:s.argument??null,value:s.price,
       fighters:e.teams,title:e.tournament,date:time(e.start),startTime:new Date(e.start).toISOString(),label:s.label+(s.argument==null?'':' '+s.argument),source:'API-Sport · Pari',sourceKey:'pari'};
   }
-  window.EsportsFeed={snapshot,fresh:p=>{
+  window.EsportsFeed={snapshot,priceCell,event:id=>data?.events.find(e=>e.id===id),connection:()=>data?.live||'stopped',wanted:()=>liveWanted,movements:()=>[...movements].filter(([,v])=>v.until>Date.now()),fresh:p=>{
     const e=data?.events.find(e=>e.id===p.id);
     return !!e&&(liveWanted&&data?.live==='connected'&&e.live_confirmed||!data?.error&&Date.now()/1000-(e.line_received_at||data?.fetched_at||0)<=120);
   }};
@@ -98,7 +98,15 @@
     button.setAttribute('aria-pressed',String(kind==='unlined'));button.textContent='В ОЖИДАНИИ ЛИНИИ';row.append(button);
   }
   const drawMarkets=draw;
-  draw=function(){drawMarkets();addUnlinedTab();};
+  draw=function(){drawMarkets();addUnlinedTab();
+    for(const row of view.querySelectorAll('.es-card')){
+      const id=row.querySelector('[data-es-expand]')?.dataset.esExpand,e=data?.events.find(e=>e.id===id);
+      if(!e)continue;
+      const teams=row.querySelector('.es-teams');
+      teams.innerHTML='<button class="es-team-open" data-es-detail="'+esc(id)+'">'+e.teams.map((n,i)=>'<span class="es-team-row"><strong>'+esc(n)+'</strong><b>'+(['inprogress','finished'].includes(e.status)&&Number.isFinite(e.score?.[i])?e.score[i]:'')+'</b></span>').join('')+'</button><small>'+esc(e.status==='finished'?'Завершён':e.status==='inprogress'?'Live':'Прематч')+'</small><span class="es-map-line">'+(e.details?.games||[]).map(g=>'К'+g.number+': '+g.score.map(v=>Number.isFinite(v)?v:'—').join('–')).join(' · ')+'</span>';
+    }
+    window.EventDetail?.update();
+  };
   render=function(){baseRender();draw();};
   async function load(refresh=false){
     if(busy)return;busy=true;problem='';draw();let next;
@@ -122,7 +130,7 @@
     if(b.dataset.esPick&&!b.disabled){const p=snapshot(JSON.parse(decodeURIComponent(b.dataset.esPick)));window.EsportsCoupon?.toggle(p);}
     if(b.dataset.esGame){game=b.dataset.esGame;draw();}
     if(b.dataset.esKind){kind=b.dataset.esKind;draw();}
-    if(b.dataset.esExpand){expanded.has(b.dataset.esExpand)?expanded.delete(b.dataset.esExpand):expanded.add(b.dataset.esExpand);draw();}
+    if(b.dataset.esExpand||b.dataset.esDetail)window.EventDetail?.open('esports',b.dataset.esExpand||b.dataset.esDetail);
   });
   const originalSetSport=window.FightScreen.setSport;
   window.FightScreen.setSport=value=>{if(value!=='esports')return originalSetSport(value);sport=value;topOnly=false;render();if(!data)load();};

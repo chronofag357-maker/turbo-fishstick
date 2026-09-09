@@ -17,6 +17,26 @@ def message(price=2):
 
 
 class LiveTests(unittest.IsolatedAsyncioTestCase):
+    def test_map_scores_delta_and_missing_values(self):
+        live = LiveFeed()
+        msg = message()
+        msg['data']['esports'] = {'bestOf': 5, 'games': [{'gameNumber': 1, 'status': 'inprogress',
+            'homeScore': {'current': 17}, 'awayScore': {'current': 14},
+            'statistics': {'home': {'goldEarned': 72000}}}]}
+        live.apply(msg)
+        details = live.events['apisport-1']['details']
+        self.assertEqual(details['games'][0]['score'], [17, 14])
+        self.assertEqual(details['games'][0]['statistics']['goldEarned'], [72000, None])
+        live.apply({'type': 'match_delta', 'sportSlug': 'esports', 'matchId': 1, 'timestamp': 2,
+            'changes': {'updated': {'homeScore': {'current': 1}, 'status': 'finished'}}})
+        self.assertEqual(live.events['apisport-1']['score'], [1, None])
+        self.assertEqual(live.events['apisport-1']['status'], 'finished')
+        live.apply({'type': 'match_delta', 'sportSlug': 'esports', 'matchId': 1, 'timestamp': 3,
+            'changes': {'updated': {'esports': {'games': {'0': {'homeScore': {'current': 18},
+              'winnerCode': 1, 'status': 'finished'}}}}}})
+        self.assertEqual(live.events['apisport-1']['details']['games'][0]['score'], [18, 14])
+        self.assertEqual(live.events['apisport-1']['details']['games'][0]['winner'], 1)
+
     async def test_socket_protocol_and_stop_disconnect(self):
         from aiohttp import web
         from aiohttp.test_utils import TestServer

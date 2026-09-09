@@ -35,6 +35,25 @@ def name(obj):
     return (obj.get('translations') or {}).get('ru') or obj.get('name') or 'Уточняется'
 
 
+def match_details(match):
+    """Small public projection of documented map scores; missing is not zero."""
+    number = lambda v: v if type(v) in (int, float) and math.isfinite(v) and v >= 0 else None
+    esports = match.get('esports') or {}
+    games = []
+    for game in esports.get('games') or []:
+        if not isinstance(game, dict):
+            continue
+        stats = game.get('statistics') or {}
+        games.append({'number': number(game.get('gameNumber')), 'status': game.get('status'),
+                      'winner': game.get('winnerCode') if game.get('winnerCode') in (1, 2) else None,
+                      'duration': number(game.get('durationSeconds')),
+                      'map': game.get('map') if isinstance(game.get('map'), str) else None,
+                      'score': [number((game.get(side+'Score') or {}).get('current')) for side in ('home', 'away')],
+                      'statistics': {key: [number((stats.get(side) or {}).get(key)) for side in ('home', 'away')]
+                                     for key in ('kills', 'goldEarned', 'towerKills', 'dragonKills', 'nashorKills', 'towersDestroyed')}})
+    return {'bestOf': number(esports.get('bestOf')), 'games': games}
+
+
 def normalize(match):
     book = (match.get('oddsBk') or {}).get(BOOK) or {}
     status = match.get('status')
@@ -55,7 +74,7 @@ def normalize(match):
             'game': name(match.get('category')), 'teams': [name(match.get('homeTeam')), name(match.get('awayTeam'))],
             'score': [(match.get('homeScore') or {}).get('current'), (match.get('awayScore') or {}).get('current')],
             'markets': markets, 'active': bool(book.get('isBettingActive')) and status in ('notstarted', 'inprogress'),
-            'updated': book.get('updatedAt')}
+            'updated': book.get('updatedAt'), 'details': match_details(match)}
 
 
 async def fetch_matches():

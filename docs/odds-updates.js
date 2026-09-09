@@ -18,6 +18,7 @@ window.oddsMovement = function(previous, next) {
 };
 (() => {
   let previous = new Map(), movements = new Map(), opened = null;
+  window.fightOddsChange=(id,key)=>movements.get(id)?.[key];
   const screen = window.FightScreen, baseSet = screen.setEvents, baseRender = render;
   const decorate = (button, change) => {
     if (!change) return;

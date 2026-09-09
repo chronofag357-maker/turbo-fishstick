@@ -13,14 +13,25 @@ WS_URL = 'wss://ws.api.api-sport.ru/'
 
 
 def merge(target, update):
+    # Deltas address array entries by numeric index (esports.games.0, etc.).
+    if isinstance(target, list) and isinstance(update, dict):
+        for index, value in update.items():
+            if not str(index).isdigit() or int(index) > 10000:
+                continue
+            index = int(index)
+            while len(target) <= index:
+                target.append({})
+            if isinstance(value, dict) and isinstance(target[index], (dict, list)):
+                merge(target[index], value)
+            else:
+                target[index] = copy.deepcopy(value)
+        return
     for key, value in update.items():
         if key == 'oddsBk' and isinstance(value, dict):
             target.setdefault(key, {}).update(copy.deepcopy(value))  # replace whole bookmaker boards
-        elif isinstance(value, dict) and isinstance(target.get(key), dict):
+        elif isinstance(value, dict) and isinstance(target.get(key), (dict, list)):
             merge(target[key], value)
         else:
-            if self.status == 'error':
-                return self.present()
             target[key] = copy.deepcopy(value)
 
 
