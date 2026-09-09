@@ -47,7 +47,7 @@
     const change=movements.get(priceId(e.id,m.key,s));
     const direction=change&&change.until>Date.now()?(change.up?'up':'down'):'';
     const encoded=encodeURIComponent(JSON.stringify(p));
-    return '<button type="button" class="es-price '+(direction?'es-'+direction:'')+'" data-es-pick="'+encoded+'" aria-pressed="'+!!window.EsportsCoupon?.selected(p)+'" '+(!snapshot(p)?'disabled':'')+' title="'+esc(direction?change.old.toFixed(2)+' → '+s.price.toFixed(2):'Добавить в купон')+'"><small>'+esc(s.label+(s.argument==null?'':' '+s.argument))+'</small><strong>'+s.price.toFixed(2)+'</strong>'+(direction?'<span class="es-move" aria-hidden="true">'+(direction==='up'?'↑':'↓')+'</span>':'')+'</button>';
+    return '<button type="button" class="es-price '+(direction?'es-'+direction:'')+'" data-es-pick="'+encoded+'" aria-pressed="'+!!window.EsportsCoupon?.selected(p)+'" '+(!snapshot(p)?'disabled':'')+' title="'+esc(direction?change.old.toFixed(2)+' → '+s.price.toFixed(2):'Добавить в купон')+'"><small>'+esc(s.label+(s.argument==null?'':' '+s.argument))+'</small><strong>'+s.price.toFixed(2)+'</strong>'+(direction?'<span class="es-move" aria-hidden="true"><svg viewBox="0 0 12 28"><path d="M6 25V3M2 7l4-4 4 4"/></svg></span>':'')+'</button>';
   }
   async function liveRequest(stop=false){
     const body={viewer,stop};
