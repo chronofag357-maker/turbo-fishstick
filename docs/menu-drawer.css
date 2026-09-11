@@ -24,3 +24,26 @@
 #panel.menu-drawer:not(.welcome-auth) .account-menu>.menu-logout{margin-top:auto;width:100%;min-height:44px;text-align:left;padding:12px;font-size:13px}
 @keyframes menu-drawer-enter{from{transform:translateX(-100%)}to{transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){#panel.hamburger-sheet.menu-drawer[open]{animation:none}}
+
+/* Fit the full signed-in account, including statistics and admin navigation. */
+#panel.hamburger-sheet.menu-drawer:not(.welcome-auth){padding:calc(12px + env(safe-area-inset-top)) 14px calc(10px + env(safe-area-inset-bottom))}
+#panel.menu-drawer:not(.welcome-auth) .account-menu{gap:8px;font-size:12px}
+#panel.menu-drawer:not(.welcome-auth) .account-menu>.menu-account-row{padding-top:0;flex-shrink:0}
+#panel.menu-drawer:not(.welcome-auth) .menu-account-row .menu-avatar-block{grid-template-columns:44px minmax(0,1fr);column-gap:9px}
+#panel.menu-drawer .menu-avatar-block>.menu-avatar{width:44px;height:44px}
+#panel.menu-drawer .menu-avatar svg{width:36px;height:36px}
+#panel.menu-drawer .menu-avatar-block>strong{font-size:14px}
+#panel.menu-drawer:not(.welcome-auth) .account-menu>.menu-balance{min-height:58px;padding:8px 12px;flex-shrink:0}
+#panel.menu-drawer:not(.welcome-auth) .menu-balance strong{font-size:22px;margin-top:2px}
+#panel.menu-drawer .server-stats{padding:2px 0;gap:5px 10px;font-size:10px}
+#panel.menu-drawer .server-stats b{font-size:12px}
+#panel.menu-drawer .menu-links button{min-height:40px;padding:7px 4px}
+#panel.menu-drawer .menu-shortcuts button,#panel.menu-drawer [data-server-ledger]{min-height:40px;padding:6px 8px}
+#panel.menu-drawer:not(.welcome-auth) .account-menu>.menu-logout{min-height:40px;padding:8px 10px;font-size:12px}
+#panel.menu-drawer .account-menu>*{flex-shrink:0}
+@media(max-height:650px){
+ #panel.menu-drawer:not(.welcome-auth) .account-menu{gap:5px}
+ #panel.menu-drawer .menu-links button{min-height:34px;padding:5px 4px}
+ #panel.menu-drawer .menu-shortcuts button,#panel.menu-drawer [data-server-ledger],#panel.menu-drawer:not(.welcome-auth) .account-menu>.menu-logout{min-height:34px;padding:5px 8px}
+ #panel.menu-drawer .server-stats{gap:3px 8px}
+}
