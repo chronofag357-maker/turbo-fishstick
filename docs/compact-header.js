@@ -23,5 +23,5 @@
  const source=document.querySelector('.fight-list-toolbar details>summary');
  if(source){source.textContent='Об источнике';const brief=document.createElement('span');brief.className='source-brief';brief.textContent='The Odds · букмекеры США, Европы, UK, Австрии, РФ';brief.title='Букмекеры США, Европы, Великобритании, Австрии и России — перечень на перспективу';source.append(brief);}
  if(source){const original=source.parentElement.querySelector('a[href="https://the-odds-api.com/"]');if(original){const link=original.cloneNode(true);link.classList.add('source-quick-link');link.removeAttribute('style');link.addEventListener('click',e=>e.stopPropagation());source.append(link);}}
- const css=document.createElement('link');css.rel='stylesheet';css.href='compact-header.css?v=221';document.head.append(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='compact-header.css?v=259';document.head.append(css);
 })();

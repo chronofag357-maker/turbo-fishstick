@@ -110,7 +110,7 @@
   backline.textContent=brand.firstChild.textContent;
   brand.firstChild.replaceWith(backline);
   const frontLine=document.createElement('span');
-  frontLine.textContent='Freebet';
+  frontLine.textContent='FreeBetting';
   brand.querySelector('span').replaceWith(frontLine);
   brand.classList.add('usb-wordmark');
   const symbol=document.createElementNS('http://www.w3.org/2000/svg','svg');
@@ -241,8 +241,7 @@
     const height=Math.max(0,available);
     dialog.style.setProperty('--welcome-sheet-height',height+'px');
     panel('Вход',`<div class="account-menu welcome-coupon">
-      <button type="button" class="auth-generate" data-code-generate><span class="auth-placeholder">Генерация кода</span><span class="auth-card-end" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M6 12a10 10 0 0 1 20 0M3 17v-3M29 14v3M8 27c3-4 3-8 3-13a5 5 0 0 1 10 0c0 7-1 12-4 16M5 23c2-3 2-6 2-9a9 9 0 0 1 18 0c0 5 0 8-2 12M12 29c3-5 3-10 3-15a1 1 0 0 1 2 0c0 4 0 8-1 11M26 22l1-4"/></svg></span></button>
-      <div class="auth-quote"><output data-code-source aria-label="Код для входа" aria-live="polite"></output><span class="auth-card-end auth-lock" role="img" aria-label="Код не подтверждён"><svg viewBox="0 0 32 32" aria-hidden="true"><path class="auth-lock-shackle" d="M8 20V11a8 8 0 0 1 16 0v5"/><rect x="5" y="15" width="22" height="15" rx="3"/></svg></span></div>
+      <button type="button" class="auth-generate" data-code-generate><output class="auth-placeholder" data-code-source aria-label="Код для входа" aria-live="polite">Генерация кода</output><span class="auth-card-end auth-lock" role="img" aria-label="Код не подтверждён"><svg viewBox="0 0 32 32" aria-hidden="true"><path class="auth-lock-shackle" d="M8 20V11a8 8 0 0 1 16 0v5"/><rect x="5" y="15" width="22" height="15" rx="3"/></svg></span></button>
       <div class="auth-entry-row"><input data-code-entry readonly inputmode="none" aria-label="Введите сгенерированный код" placeholder="Введите сгенерированный код"><span class="auth-entry-caret" aria-hidden="true"></span><span data-auth-percent>0%</span></div>
 <div class="auth-keypad" aria-label="Цифровая клавиатура">${['1','2','3','4','5','6','7','8','9','0','⌫'].map(k=>`<button type="button" data-auth-key="${k}" aria-label="${k==='⌫'?'Удалить цифру':k}">${k==='⌫'?'<svg class="auth-backspace-icon" viewBox="0 0 28 24" aria-hidden="true"><path d="M10 4H25V20H10L2 12Z"/><path d="m14 9 6 6m0-6-6 6"/></svg>':k}</button>`).join('')}<span class="auth-dial-dots" aria-hidden="true"><svg viewBox="0 0 24 30"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="12" cy="26" r="2"/></svg></span></div>
       <div class="auth-slide"><div class="auth-trail"></div><span class="auth-slide-hint">← Проведите до конца</span><button type="button" data-verify-slider role="slider" aria-label="Заключить пари — вход" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" disabled>Заключить пари</button></div>
@@ -250,6 +249,37 @@
     </div>`);
     dialog.classList.add('hamburger-sheet','welcome-coupon-sheet');
     const source=dialog.querySelector('[data-code-source]'),entry=dialog.querySelector('[data-code-entry]'),range=dialog.querySelector('[data-verify-slider]'),status=dialog.querySelector('.menu-demo-message'),verify=dialog.querySelector('.auth-slide'),keypad=dialog.querySelector('.auth-keypad');
+    const keyboardDrawer=document.createElement('div');
+    keyboardDrawer.className='auth-keyboard-drawer';keyboardDrawer.hidden=true;
+    keyboardDrawer.append(keypad);dialog.querySelector('#panel-body').append(keyboardDrawer);
+    const keyGlints=[...keypad.querySelectorAll('[data-auth-key]')].filter(b=>/^\d$/.test(b.dataset.authKey)).map(b=>{
+      const label=document.createElement('span');label.className='auth-key-label';label.textContent=b.dataset.authKey;
+      const shine=document.createElement('span');shine.className='auth-key-glint';
+      shine.setAttribute('aria-hidden','true');b.replaceChildren(shine,label);return shine;
+    });
+    function syncKeyGlints(){
+      keyGlints.forEach(s=>{s.style.animation='none';});
+      if(reduced.matches||keyboardDrawer.hidden)return;
+      const master=glint.getAnimations().find(a=>a.animationName==='welcome-contour-glint');
+      if(!master)return;
+      const style=getComputedStyle(glint);
+      keyGlints.forEach(s=>{
+        s.style.color=style.color;
+        s.style.maskImage=style.maskImage;s.style.maskSize=style.maskSize;s.style.maskRepeat=style.maskRepeat;
+        // Chromium omits mask-position when exporting CSS keyframes to WAAPI.
+        // Reuse the CSS animation itself so the light band actually travels.
+        void s.offsetWidth;s.style.animation=style.animation;
+        const animation=s.getAnimations()[0];
+        // Share the logo's timeline, including its initial delay, even on reopening.
+        animation.startTime=master.startTime;
+      });
+    }
+    glint.addEventListener('animationstart',syncKeyGlints);
+    reduced.addEventListener('change',syncKeyGlints);
+    dialog.addEventListener('close',()=>{
+      glint.removeEventListener('animationstart',syncKeyGlints);reduced.removeEventListener('change',syncKeyGlints);
+      keyGlints.forEach(s=>s.getAnimations().forEach(a=>a.cancel()));
+    },{once:true});
     let code='',attempted=false,drag=null,typed='',busy=false;
     range.value='0';
     brand.querySelector('.welcome-login-fill')?.remove();
@@ -288,11 +318,13 @@
       if(!dialog.open||!source.isConnected)return;
       code=randomCode();rolling.textContent=code;
       generator.classList.add('is-generated');
-      dialog.querySelector('.auth-quote').classList.add('is-generated');
+      source.removeAttribute('aria-hidden');
       source.textContent=code;typed='';attempted=false;
+      keyboardDrawer.hidden=false;dialog.classList.add('is-keyboard-open');
+      syncKeyGlints();
       keypad.querySelectorAll('button').forEach(b=>b.disabled=false);
       updateEntry();entry.focus({preventScroll:true});
-    },3000);
+    },2000);
     dialog.addEventListener('close',()=>{clearInterval(shuffle);clearTimeout(finishGeneration);},{once:true});
     function key(k){
       if(!code||busy)return;
@@ -343,7 +375,7 @@
     dialog.querySelector(':scope > .welcome-guest-avatar')?.remove();
     dialog.querySelector(':scope > .welcome-guest-heading')?.remove();
     brand.querySelector('.welcome-login-fill')?.remove();
-    dialog.classList.remove('welcome-auth','welcome-coupon-sheet');
+    dialog.classList.remove('welcome-auth','welcome-coupon-sheet','is-keyboard-open');
     gate.querySelector('.welcome-content').style.transform='';
     if(!gate.hidden)login.focus({preventScroll:true});
   });

@@ -1,0 +1,25 @@
+#app .header .sports.section-carousel{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:none;user-select:none}
+#app .header .sports.section-carousel::-webkit-scrollbar{display:none}
+#app .header .sports.section-carousel{overflow-anchor:none;justify-content:start}
+#app .header .sports.section-carousel>.sport,#app .header .sports.section-carousel>.sport:first-child{flex:0 0 auto;width:max-content;min-width:32px;padding-inline:2px;font-size:10px;white-space:nowrap}
+#app .header .sports.section-carousel .sport-label{white-space:nowrap}
+#app .header .sports.section-carousel>.live-trainer-tab .sport-label{font-size:9px}
+@media(max-width:350px){#app .header .sports.section-carousel>.sport,#app .header .sports.section-carousel>.sport:first-child{font-size:9px}#app .header .sports.section-carousel>.live-trainer-tab .sport-label{font-size:8px}}
+#app .header .sports>.extra-section-tab.active{color:var(--blue)}
+#app .header .sports>.extra-section-tab.active svg{color:var(--blue)}
+#app .header .sports>.extra-section-tab.active .sport-label{color:var(--blue);background:none;-webkit-text-fill-color:var(--blue)}
+#app.extra-section-open>:not(.header):not(.bottom-nav):not(.extra-section-screen){display:none!important}
+#app.extra-section-open .header .markets,#app.extra-section-open .header .search-box{display:none!important}
+#app .extra-section-screen{min-height:calc(100dvh - 160px)}
+#app .topbar.has-broadcast{gap:5px;padding-inline:6px}
+#app .topbar.has-broadcast .modes{gap:8px;flex:none}
+#app .topbar.has-broadcast .language-switch{margin-left:auto}
+#app .topbar.has-broadcast .mode{font-size:17px}
+#app .topbar.has-broadcast .icon-button{width:24px;flex:none}
+#app .topbar.has-broadcast>.broadcast-tab{flex:none;width:48px;min-width:48px;height:40px;padding:2px 0;gap:1px;font-size:8px;line-height:1.1;justify-content:center}
+#app .topbar .broadcast-icon{position:relative;width:21px;height:21px}
+#app .topbar .broadcast-icon>svg{width:21px;height:21px}
+#app .topbar .broadcast-live-badge{position:absolute;left:calc(100% + 1px);top:50%;transform:translateY(-50%);font-size:8px;gap:2px}
+#app .topbar .broadcast-live-badge:before{width:6px;height:6px}
+#app:has(.sports.broadcast-open) .topbar .broadcast-tab{color:var(--blue)}
+@media(max-width:350px){#app .topbar.has-broadcast{gap:3px;padding-inline:4px}#app .topbar.has-broadcast .modes{gap:6px}#app .topbar.has-broadcast .mode{font-size:15px}#app .topbar.has-broadcast .language-switch button{min-width:18px;padding-inline:2px;font-size:8px}}

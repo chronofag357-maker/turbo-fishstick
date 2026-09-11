@@ -48,3 +48,20 @@
 .es-up .es-move{left:2px;color:#567A22}.es-down .es-move{right:2px;color:#98536F}
 @keyframes es-price-flash{50%{filter:brightness(1.15)}}
 @media(prefers-reduced-motion:reduce){.es-price.es-up,.es-price.es-down{animation:none}}
+/* Match the compact combat list geometry without changing feed/market data. */
+#app #esports-events .es-title{min-height:44px;padding:8px 12px;gap:7px}
+#app #esports-events .es-title>span:first-child{min-width:0;flex:1}
+#app #esports-events .es-title time{font-size:9px;font-weight:500;line-height:1.25}
+#app #esports-events .es-title strong{margin-top:3px;font-size:12px;font-weight:600;line-height:1.25}
+#app #esports-events .es-chevron{display:inline-flex;align-items:center;justify-content:center;flex:0 0 12px;width:12px;height:20px;font-size:17px;line-height:1}
+#app #esports-events .es-match{grid-template-columns:minmax(0,56.7fr) minmax(0,43.3fr);min-height:48px}
+#app #esports-events .es-teams{min-width:0;margin-left:6px;padding:4px 8px;gap:4px;font-size:12px;line-height:1.15}
+#app #esports-events .es-team-open{min-height:0;display:flex;flex-direction:column;justify-content:center;gap:4px;font:inherit;flex:1}
+#app #esports-events .es-team-row strong{min-width:0;font-size:12px;font-weight:600;line-height:1.15}
+#app #esports-events .es-team-row b{flex:none;font-size:12px}
+#app #esports-events .es-teams>small,#app #esports-events .es-map-line{font-size:9px;line-height:1.2}
+#app #esports-events .es-map-line:empty{display:none}
+#app #esports-events .es-price{min-height:48px;padding:4px 2px;gap:2px;border-left:0}
+#app #esports-events .es-price small{font-size:10px;line-height:1.2}
+#app #esports-events .es-price strong{font-size:17px;line-height:1.2;font-weight:750}
+#app #esports-events .es-price:nth-child(even):not(.es-up):not(.es-down){background:white}

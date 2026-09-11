@@ -32,6 +32,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
   assert(await page.locator('#welcome-gate').isVisible());
   assert.equal(await page.locator('.welcome-shackle').count(),0);
   assert(await page.locator('.usb-wordmark').isVisible());
+  assert.equal(await page.locator('h1.usb-wordmark > .welcome-terminal-last').textContent(),'FreeBetting');
   assert(await page.locator('.welcome-usb-body').isHidden());
   assert.equal(await page.locator('.welcome-unlock-control').count(),0);
   assert.equal(await page.locator('.usb-fill').evaluate(el=>getComputedStyle(el).fillOpacity),'0');
@@ -58,7 +59,25 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
   assert(await page.locator('#welcome-gate').isVisible());
   await page.locator('.welcome-login').click();
   assert.equal(await page.locator('[data-demo-partner]').count(),0);
-  await page.waitForFunction(()=>document.querySelector('[data-code-source]')?.textContent.length>0);
+  await page.locator('.auth-generate.is-generated').waitFor();
+  await page.waitForTimeout(100);
+  assert(await page.evaluate(()=>{
+    const master=document.querySelector('.welcome-glint').getAnimations()[0];
+    const glints=[...document.querySelectorAll('.auth-key-glint')];
+    return glints.length===10&&glints.every(s=>{
+      const a=s.getAnimations()[0];
+      return a&&a.startTime===master.startTime&&a.effect.getTiming().duration===master.effect.getTiming().duration&&
+        getComputedStyle(s).color===getComputedStyle(document.querySelector('.welcome-glint')).color;
+    });
+  }),'Keypad glints share wordmark phase, timing and color');
+  await page.evaluate(()=>{
+    const master=document.querySelector('.welcome-glint').getAnimations()[0];
+    for(const a of [master,...[...document.querySelectorAll('.auth-key-glint')].flatMap(s=>s.getAnimations())]){a.pause();a.currentTime=2750;}
+  });
+  await page.screenshot({path:`.tools/welcome-keypad-glint-${width}.png`});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await page.locator('.auth-key-glint').first().evaluate(s=>s.getAnimations().length),0);
+  await page.emulateMedia({reducedMotion:'no-preference'});
   const code=await page.locator('[data-code-source]').innerText();
   assert.match(code,/^\d\.\d{2}$/);
   for(const k of code.replace('.',''))await page.locator(`[data-auth-key="${k}"]`).click();
@@ -86,7 +105,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
   await page.goto('http://127.0.0.1/mini-app.html?preview=1');
   await page.evaluate(()=>localStorage.setItem('p2p-coupon-draft:local:Марсель Ла',JSON.stringify({picks:[['draft-test',{id:'draft-test',kind:'outcomes',index:0,value:2,fighters:['А','Б'],label:'Победа А',sport:'boxing'}]],stake:'1234',expanded:true})));
   await page.locator('.welcome-login').click();
-  await page.waitForFunction(()=>document.querySelector('[data-code-source]')?.textContent.length>0);
+  await page.locator('.auth-generate.is-generated').waitFor();
   for(const k of (await page.locator('[data-code-source]').innerText()).replace('.',''))await page.locator(`[data-auth-key="${k}"]`).click();
   await page.locator('.auth-slide').waitFor({state:'visible'});
   await page.locator('[data-verify-slider]').focus();await page.keyboard.press('End');

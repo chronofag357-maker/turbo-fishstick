@@ -69,13 +69,41 @@
 #panel.welcome-coupon-sheet .auth-generate:disabled{cursor:default;opacity:1}
 #panel.welcome-coupon-sheet .auth-generate,#panel.welcome-coupon-sheet .auth-quote,#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row{height:calc(var(--auth-unit) + 4px);min-height:calc(var(--auth-unit) + 4px)}
 #panel.welcome-coupon-sheet .auth-keypad{margin-top:3px}
-#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet{--auth-unit:min(44px,calc((var(--welcome-sheet-height) - 78px)/8));padding-top:30px;padding-bottom:8px}
-#panel.welcome-coupon-sheet .welcome-coupon{gap:3px}
-#panel.welcome-coupon-sheet .auth-generate,#panel.welcome-coupon-sheet .auth-quote,#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row{height:calc(var(--auth-unit) + 4px);min-height:calc(var(--auth-unit) + 4px)}
-#panel.welcome-coupon-sheet .auth-keypad{grid-template-columns:repeat(3,var(--auth-unit));grid-template-rows:repeat(4,var(--auth-unit));gap:2px 22px}
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet{--auth-unit:min(64px,calc((var(--welcome-sheet-height) - 74px)/7));padding:24px 10px 4px}
+#panel.welcome-coupon-sheet .welcome-coupon{gap:4px}
+#panel.welcome-coupon-sheet .auth-generate,#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row{height:calc(var(--auth-unit) + 8px);min-height:calc(var(--auth-unit) + 8px)}
+#panel.welcome-coupon-sheet .auth-keypad{grid-template-columns:repeat(3,var(--auth-unit));grid-template-rows:repeat(4,var(--auth-unit));gap:2px 28px}
+#panel.welcome-coupon-sheet .menu-demo-message:empty{display:none}
+#panel.welcome-coupon-sheet .menu-demo-message:not(:empty){position:absolute;bottom:4px;left:18px;width:calc(55% - 28px);height:calc(var(--auth-unit) + 4px);display:flex;align-items:center;z-index:1;pointer-events:none;font-size:10px}
+#panel.welcome-coupon-sheet:has(.menu-demo-message:not(:empty)) .auth-slide-hint{visibility:hidden}
 #panel.welcome-coupon-sheet .auth-keypad button,#panel.welcome-coupon-sheet .auth-dial-dots{width:var(--auth-unit);height:var(--auth-unit);min-height:var(--auth-unit);font-size:calc(var(--auth-unit)*.55)}
-#panel.welcome-coupon-sheet .auth-slide,#panel.welcome-coupon-sheet [data-verify-slider]{height:var(--auth-unit);min-height:var(--auth-unit)}
+#panel.welcome-coupon-sheet .auth-slide,#panel.welcome-coupon-sheet [data-verify-slider]{height:calc(var(--auth-unit) + 4px);min-height:calc(var(--auth-unit) + 4px)}
+#panel.welcome-coupon-sheet [data-verify-slider]{font-size:clamp(12px,calc(var(--auth-unit)*.27),16px)}
+#panel.welcome-coupon-sheet .auth-generate [data-code-source]{order:0;display:flex;align-items:center;flex:1;width:auto;background:transparent;border-radius:0;font:600 22px Arial,sans-serif;font-variant-numeric:tabular-nums;color:inherit}
+#panel.welcome-coupon-sheet .auth-generate .auth-lock svg{fill:currentColor;stroke:none;color:inherit}
 #panel.welcome-coupon-sheet .auth-entry-caret{top:50%;transform:translateY(-50%);height:16px}
 #panel.welcome-coupon-sheet .auth-card-end svg{max-height:calc(var(--auth-unit) - 4px)}
 #panel.welcome-coupon-sheet [data-code-entry]::placeholder{font:400 10px Arial,sans-serif;color:#777b92;opacity:1;text-indent:5px}
 #panel.welcome-coupon-sheet .auth-keypad .auth-backspace-icon{width:72%;height:72%;max-width:28px;max-height:24px;margin:auto;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* Sweep the circular surface below the unchanged white digit. */
+#panel.welcome-coupon-sheet .auth-keypad button{position:relative;isolation:isolate;overflow:hidden}
+#panel.welcome-coupon-sheet .auth-key-label{position:relative;z-index:1;color:#fff;pointer-events:none}
+#panel.welcome-coupon-sheet .auth-key-glint{position:absolute;inset:0;border-radius:50%;z-index:0;pointer-events:none;opacity:0;background:currentColor;filter:opacity(.4);mix-blend-mode:normal}
+@media(prefers-reduced-motion:reduce){#panel.welcome-coupon-sheet .auth-key-glint{display:none}}
+/* Stationary bottom coupon with a transparent keyboard above its right edge. */
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet > .close{display:none}
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet{--auth-row:min(48px,calc(var(--auth-unit)*1.2));--auth-coupon-height:calc(var(--auth-row)*3 + 52px);--auth-floating-key:min(44px,calc((var(--welcome-sheet-height) - var(--auth-coupon-height) - 24px)/4));--auth-keyboard-height:calc(var(--auth-floating-key)*4 + 6px);height:var(--auth-coupon-height);padding:0;border:0;background:transparent;box-shadow:none;overflow:visible;transition:none}
+#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet.is-keyboard-open{height:var(--auth-coupon-height)}
+#panel.welcome-coupon-sheet #panel-body{display:flex;flex-direction:column;gap:8px}
+#panel.welcome-coupon-sheet .welcome-coupon{position:relative;box-sizing:border-box;flex:none;height:var(--auth-coupon-height);margin:0;padding:28px 8px 12px;gap:6px;background:#fff;border-radius:16px 16px 8px 8px}
+#panel.welcome-coupon-sheet .auth-generate,#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet .auth-entry-row,#panel.welcome-coupon-sheet .auth-slide,#panel.welcome-coupon-sheet [data-verify-slider]{height:var(--auth-row);min-height:var(--auth-row)}
+#panel.welcome-coupon-sheet .auth-slide{margin-top:0}
+#panel.welcome-coupon-sheet .auth-generate [data-code-source]{font-size:20px}
+#panel.welcome-coupon-sheet .auth-keyboard-drawer{position:absolute;right:10px;bottom:calc(100% + 12px);box-sizing:border-box;width:calc(var(--auth-floating-key)*3 + 32px);height:var(--auth-keyboard-height);padding:0;background:transparent;border:0;box-shadow:none;animation:auth-keyboard-side 300ms cubic-bezier(.16,1,.3,1) both}
+#panel.welcome-coupon-sheet .auth-keyboard-drawer[hidden]{display:none}
+#panel.welcome-coupon-sheet .auth-keyboard-drawer .auth-keypad{margin:0;animation:none;grid-template-columns:repeat(3,var(--auth-floating-key));grid-template-rows:repeat(4,var(--auth-floating-key));gap:2px 16px}
+#panel.welcome-coupon-sheet .auth-keyboard-drawer .auth-keypad button,#panel.welcome-coupon-sheet .auth-keyboard-drawer .auth-dial-dots{width:var(--auth-floating-key);height:var(--auth-floating-key);min-height:var(--auth-floating-key);font-size:calc(var(--auth-floating-key)*.55)}
+#panel.welcome-coupon-sheet .menu-demo-message:not(:empty){bottom:12px;height:var(--auth-row)}
+@keyframes auth-keyboard-side{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){#panel.hamburger-sheet.welcome-auth.welcome-coupon-sheet{transition:none}#panel.welcome-coupon-sheet .auth-keyboard-drawer{animation:none}}

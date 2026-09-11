@@ -30,8 +30,12 @@
 #app .sports>.sport svg{width:21px;height:21px;flex-shrink:0}
 #app .sports .sport-label{display:block;max-width:100%;overflow-wrap:normal}
 #app .sports .broadcast-caption{gap:2px;flex-wrap:wrap;justify-content:center;white-space:normal}
-#app .sports .broadcast-live-badge{font-size:8px}
-#app .sports .broadcast-live-badge:before{width:4px;height:4px}
+#app .header .sports>.sport{justify-content:flex-start;gap:4px}
+#app .sports .broadcast-icon{position:relative;width:21px;height:21px;flex:none}
+#app .sports .broadcast-icon>svg{display:block}
+#app .sports .broadcast-live-badge{position:absolute;left:calc(100% + 2px);top:50%;transform:translateY(-50%);font-size:9px;gap:2px}
+#app .sports .broadcast-live-badge:before{width:6px;height:6px;flex:none}
+@media(max-width:350px){#app .sports .broadcast-icon{width:19px;height:19px}}
 #app .markets{padding:4px 7px;gap:4px;grid-template-columns:.8fr 1.1fr 1.35fr}
 #app .markets>.market{min-height:34px;padding:3px;font-size:10px;line-height:1.15}
 #app .markets>.market>span+span{font-size:9px!important;line-height:10px!important}

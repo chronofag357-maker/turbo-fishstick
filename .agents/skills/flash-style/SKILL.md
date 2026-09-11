@@ -11,6 +11,9 @@ description: Preserve or reuse the approved Стиль флешки USB wordmark
 
 ## Композиция
 
+- Уточнение 11.09.2026: нижнее слово — FreeBetting (заглавные F и B),
+  после него тот же квадратный USB-значок. Прежнее Freebet заменено.
+
 - Слева белая USB-вилка, нижний плавный переход и две ветви, слитые с
   P в P2P Market и F в Freebet. Справа от Freebet квадрат с USB-разветвлением.
 - Шрифт Archivo Black из docs/fonts/archivo-black, сплошная белая заливка.

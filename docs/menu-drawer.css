@@ -1,0 +1,26 @@
+/* Profile navigation only; the welcome coupon remains a bottom sheet. */
+#panel.hamburger-sheet.menu-drawer:not(.welcome-auth){
+  inset:0 auto 0 max(0px,calc((100vw - 450px)/2));margin:0;
+  width:min(340px,calc(100vw - 44px));max-width:calc(100vw - 44px);
+  height:100dvh;max-height:100dvh;border-radius:0 18px 18px 0;
+  padding:calc(24px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:12px 0 36px #171b3626;overflow:hidden;
+}
+#panel.hamburger-sheet.menu-drawer[open]{animation:menu-drawer-enter 360ms cubic-bezier(.16,1,.3,1) both}
+#panel.hamburger-sheet.menu-drawer:not(.welcome-auth)>.menu-handle{display:none}
+#panel.hamburger-sheet.menu-drawer:not(.welcome-auth)>.close{top:calc(12px + env(safe-area-inset-top));right:10px;width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#777b92;box-shadow:none}
+#panel.hamburger-sheet.menu-drawer:not(.welcome-auth)>.close:hover{background:#eaeaf1;color:#293870}
+#panel.menu-drawer:not(.welcome-auth) #panel-body{height:100%;max-height:100%;overflow-y:auto;overscroll-behavior:contain}
+#panel.menu-drawer:not(.welcome-auth) .account-menu{display:flex;flex-direction:column;align-items:stretch;gap:18px;min-height:100%;font-size:14px}
+#panel.menu-drawer:not(.welcome-auth) .account-menu>.menu-account-row{display:block;margin:0;padding:4px 32px 0 0}
+#panel.menu-drawer:not(.welcome-auth) .menu-account-row .menu-avatar-block{display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:12px;row-gap:3px;width:100%;text-align:left;align-items:center}
+#panel.menu-drawer .menu-avatar-block>.menu-avatar{grid-row:1/3;width:56px;height:56px}
+#panel.menu-drawer .menu-avatar-block>strong{align-self:end;font-size:16px;overflow-wrap:anywhere}
+#panel.menu-drawer .menu-avatar-block>small{align-self:start;font-size:11px}
+#panel.menu-drawer:not(.welcome-auth) .account-menu>.menu-balance{height:auto;min-height:80px;align-self:stretch;padding:14px;margin:0}
+#panel.menu-drawer:not(.welcome-auth) .menu-balance strong{font-size:26px}
+#panel.menu-drawer .menu-links{border:0;border-radius:0}
+#panel.menu-drawer .menu-links button{min-height:50px;padding:12px 4px}
+#panel.menu-drawer:not(.welcome-auth) .account-menu>.menu-logout{margin-top:auto;width:100%;min-height:44px;text-align:left;padding:12px;font-size:13px}
+@keyframes menu-drawer-enter{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){#panel.hamburger-sheet.menu-drawer[open]{animation:none}}

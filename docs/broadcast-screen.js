@@ -5,7 +5,7 @@
   tab.className='sport broadcast-tab';tab.type='button';tab.setAttribute('aria-haspopup','dialog');
   tab.setAttribute('aria-controls','broadcast-screen');
   tab.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m10 9 5 3-5 3V9ZM8 21h8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>Трансляции</span>';
-  sports.append(tab);
+  // Opened from the profile drawer, no duplicate in the top navigation.
   // Configured live channel count, not inferred from an iframe load event.
   const liveBadge=document.createElement('small');liveBadge.className='broadcast-live-badge';
   tab.append(liveBadge);
@@ -38,7 +38,9 @@
     svg.querySelectorAll('[stroke="currentColor"]').forEach(node=>node.setAttribute('stroke','var(--sport-stroke,#777b92)'));
   });
   const caption=document.createElement('div');caption.className='broadcast-caption';
-  caption.append(tab.querySelector('.sport-label'),liveBadge);tab.append(caption);
+  caption.append(tab.querySelector('.sport-label'));tab.append(caption);
+  const icon=document.createElement('div');icon.className='broadcast-icon';
+  icon.append(tab.querySelector('svg'),liveBadge);tab.prepend(icon);
   const style=document.createElement('style');
   style.textContent=`
     #app .sports{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding-left:8px;padding-right:8px}
