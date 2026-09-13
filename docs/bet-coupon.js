@@ -10,7 +10,12 @@
   function restoreDraft(){picks.clear();stake='';expanded=false;settingsOpen=false;activeDraft=draftOwner();if(!activeDraft)return;try{const d=JSON.parse(localStorage.getItem('p2p-coupon-draft:'+activeDraft)||'null');if(d&&Array.isArray(d.picks)){for(const item of d.picks){if(Array.isArray(item)&&item.length===2&&item[1]&&Array.isArray(item[1].fighters))picks.set(item[0],item[1]);}stake=typeof d.stake==='string'?d.stake:'';expanded=!!d.expanded;settingsOpen=!!d.settingsOpen;}}catch{notice='Не удалось восстановить черновик.';}}
   const read=()=>{try{return JSON.parse(localStorage.getItem(storageKey)||'{}')}catch{return {}}};
   const wallet=name=>{if(window.ServerAccount?.enabled)return window.ServerAccount.current||{balance:0,bets:[]};const data=read();return data[name]||{balance:456000,bets:[]}};
-  window.DemoWallet={balance:name=>wallet(name).balance};
+  window.DemoWallet={balance:name=>wallet(name).balance,refill:name=>{
+    if(window.ServerAccount?.enabled||!name)throw new Error('Войдите в аккаунт.');
+    const data=read(),w=wallet(name);
+    if(w.balance!==0||w.bets.some(b=>b.status==='pending'))throw new Error('Восстановление доступно при нулевом балансе без ожидающих купонов.');
+    data[name]={...w,balance:10000};localStorage.setItem(storageKey,JSON.stringify(data));
+  }};
   const root=document.createElement('section');root.id='bet-coupon';root.setAttribute('aria-label','Купон');root.hidden=true;document.querySelector('.app').append(root);
   const style=document.createElement('style');style.textContent=`
     #bet-coupon{position:fixed;bottom:calc(54px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(100%,450px);z-index:9;background:white;border:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 -4px 20px #20243f15;color:var(--ink);font-size:12px}

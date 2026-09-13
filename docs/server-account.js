@@ -1,5 +1,7 @@
 // Server identity and play-money ledger. Demo storage is used only on localhost.
 (() => {
+  const trainingScript=document.createElement('script');trainingScript.src='training-membership.js?v=287';document.head.append(trainingScript);
+  const leagueScript=document.createElement('script');leagueScript.src='prediction-league.js?v=288';document.head.append(leagueScript);
   const local=['127.0.0.1','localhost','[::1]'].includes(location.hostname);
   const enabled=!local||!!window.Telegram?.WebApp?.initData;
   let token=sessionStorage.getItem('p2p-session')||'', current=null, busy=false;

@@ -102,6 +102,14 @@ async def logout(request):
     return web.json_response({'ok': True})
 
 
+async def training_refill(request):
+    # Closed pilot: no access granted to other existing participants.
+    if request['identity']['id'] not in settings.admin_id_set:
+        raise PermissionError('Пилот доступен только владельцу.')
+    await call(store.refill_training, request['identity']['id'])
+    return web.json_response({'ok': True})
+
+
 async def stream_token(request):
     from bot.services.stream_access import connection_details, StreamUnavailable
     data = await object_body(request)
@@ -255,6 +263,8 @@ async def policy(request):
 
 async def startup(app):
     await call(store.init)
+    from bot.services.prediction_league import init as league_init
+    await call(league_init, store)
     from bot.db.engine import init_db
     await init_db()
     from bot.services.odds_feed import configure_policy
@@ -282,6 +292,34 @@ async def scheduler(app):
         await task
 
 
+async def league_get(request):
+    from bot.services.prediction_league import snapshot
+    return web.json_response(await call(snapshot, store, request['identity']['id']))
+
+
+async def league_join(request):
+    from bot.services.prediction_league import join
+    data = await object_body(request)
+    if data.get('consent') is not True:
+        raise ValueError()
+    return web.json_response(await call(join, store, request['identity']['id'], data['tid']))
+
+
+async def league_place(request):
+    from bot.services.prediction_league import place
+    return web.json_response(await call(place, store, request['identity']['id'], await object_body(request)))
+
+
+async def league_create(request):
+    from bot.services.prediction_league import create
+    return web.json_response(await call(create, store, request['identity']['id'], await object_body(request)))
+
+
+async def league_result(request):
+    from bot.services.prediction_league import result
+    return web.json_response(await call(result, store, request['identity']['id'], await object_body(request)))
+
+
 def install(app):
     from bot.web.telegram_login import challenge, login as browser_login
     app.router.add_post('/api/private/telegram/challenge', challenge)
@@ -290,6 +328,9 @@ def install(app):
     app.cleanup_ctx.append(scheduler)
     for method, path, handler in [('POST', 'login', login), ('GET', 'me', me), ('POST', 'logout', logout),
             ('POST', 'stream/token', stream_token),
+            ('GET', 'league', league_get), ('POST', 'league/join', league_join), ('POST', 'league/place', league_place),
+            ('POST', 'admin/league/create', league_create), ('POST', 'admin/league/result', league_result),
+            ('POST', 'training/refill', training_refill),
             ('POST', 'bets', place), ('POST', 'actions', action), ('POST', 'refresh', refresh_event), ('GET', 'admin/report', report),
             ('POST', 'admin/allow', allow), ('POST', 'admin/result', result), ('POST', 'admin/policy', policy)]:
         app.router.add_route(method, '/api/private/'+path, handler)

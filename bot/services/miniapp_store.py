@@ -144,6 +144,18 @@ class Store:
                           'won': sum(b['status'] == 'won' for b in bets),
                           'lost': sum(b['status'] == 'lost' for b in bets)}}
 
+    def refill_training(self, uid):
+        """Free points, never money; serialized with placement and settlement."""
+        with self.db() as c:
+            account = c.execute('SELECT balance FROM accounts WHERE id=? AND allowed=1', (uid,)).fetchone()
+            if not account:
+                raise PermissionError('Аккаунт недоступен.')
+            if account['balance'] != 0 or c.execute("SELECT 1 FROM bets WHERE uid=? AND status='pending'", (uid,)).fetchone():
+                raise Conflict('Восстановление доступно при нулевом балансе без ожидающих купонов.')
+            c.execute('UPDATE accounts SET balance=1000000 WHERE id=?', (uid,))
+            c.execute('INSERT INTO ledger VALUES(?,?,?,?,?,?)',
+                      (str(uuid.uuid4()), uid, None, 1000000, 'training_refill', time.time()))
+
     def existing(self, uid, key, digest):
         with self.db() as c:
             row = c.execute('SELECT * FROM bets WHERE uid=? AND request_key=?', (uid, key)).fetchone()

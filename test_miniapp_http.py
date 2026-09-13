@@ -13,6 +13,8 @@ class PrivateAPITests(unittest.IsolatedAsyncioTestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.store = Store(Path(self.tmp.name)/'db.sqlite3')
         self.store.init()
+        from bot.services.prediction_league import init
+        init(self.store)
         self.store.allow(1, 2)
         self.owner = self.store.login(1, 'Owner', True)
         self.other = self.store.login(2, 'Other')
@@ -28,6 +30,10 @@ class PrivateAPITests(unittest.IsolatedAsyncioTestCase):
         app.router.add_post('/api/private/bets', miniapp.place)
         app.router.add_post('/api/private/refresh', miniapp.refresh_event)
         app.router.add_post('/api/private/stream/token', miniapp.stream_token)
+        app.router.add_get('/api/private/league', miniapp.league_get)
+        app.router.add_post('/api/private/league/join', miniapp.league_join)
+        app.router.add_post('/api/private/admin/league/create', miniapp.league_create)
+        app.router.add_post('/api/private/training/refill', miniapp.training_refill)
         self.client = TestClient(TestServer(app))
         await self.client.start_server()
 
@@ -68,6 +74,16 @@ class PrivateAPITests(unittest.IsolatedAsyncioTestCase):
         account = await r.json()
         self.assertEqual(account['balance'], 458000)
         self.assertEqual(account['bets'][0]['status'], 'won')
+
+    async def test_league_permissions(self):
+        response = await self.client.get('/api/private/league')
+        self.assertEqual(response.status, 403)
+        response = await self.client.post('/api/private/admin/league/create', json={}, headers=self.headers(self.other))
+        self.assertEqual(response.status, 403)
+        response = await self.client.post('/api/private/training/refill', json={}, headers=self.headers(self.other))
+        self.assertEqual(response.status, 403)
+        response = await self.client.post('/api/private/league/join', json={'tid':'missing'}, headers=self.headers(self.owner))
+        self.assertEqual(response.status, 400)
 
     def headers(self, token):
         return {'Authorization': 'Bearer '+token}
