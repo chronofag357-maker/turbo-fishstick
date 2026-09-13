@@ -2,6 +2,7 @@
 import asyncio
 import hashlib
 import hmac
+import logging
 import secrets
 import time
 from urllib.parse import urlsplit
@@ -56,7 +57,9 @@ async def login(request):
     pending.pop(nonce, None)
     try:
         user = await asyncio.to_thread(verify, raw, nonce)
-    except (jwt.PyJWTError, ValueError, TypeError, KeyError):
+    except (jwt.PyJWTError, ValueError, TypeError, KeyError) as exc:
+        # Log only the error class, never JWTs, profile data or signing material.
+        logging.getLogger(__name__).warning('Telegram JWT rejected: %s', type(exc).__name__)
         raise PermissionError('Telegram не подтвердил вход. Повторите попытку.') from None
     from bot.db.repo import is_user_blocked
     from bot.web.miniapp import call, store
