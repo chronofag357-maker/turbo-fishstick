@@ -208,6 +208,7 @@
   if(!reduced.matches)brand.classList.add('line-building');
   document.fonts.ready.then(()=>{
     alignBranches();
+    gate.classList.add('welcome-ready');
     if(reduced.matches){brand.classList.remove('line-building');return;}
     brand.classList.add('reveal-ready');
     let finished=false;
