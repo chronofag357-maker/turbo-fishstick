@@ -15,11 +15,14 @@
     return window.ServerAccount.api('telegram/challenge',{});
   };
   window.runBrowserLogin=(challenge)=>new Promise((resolve,reject)=>{
-    const timeout=setTimeout(()=>reject(new Error('Время входа истекло. Откройте окно заново.')),300000);
+    let finished=false;
+    const timeout=setTimeout(()=>{finished=true;reject(new Error('Время входа истекло. Повторите попытку.'));},300000);
     window.Telegram.Login.auth({client_id:challenge.client_id,scope:['profile'],nonce:challenge.nonce,lang:'ru'},async data=>{
+      if(finished)return;
+      finished=true;
       clearTimeout(timeout);
       try{
-        if(!data?.id_token)throw new Error('Вход отменён или не подтверждён. Откройте окно заново.');
+        if(!data?.id_token)throw new Error('Вход отменён или не подтверждён. Повторите попытку.');
         const result=await window.ServerAccount.api('telegram/login',{id_token:data.id_token,nonce:challenge.nonce,consent:true});
         await window.ServerAccount.acceptBrowserToken(result.token);resolve();
       }catch(e){reject(e)}

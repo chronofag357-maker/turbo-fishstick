@@ -65,10 +65,28 @@
       body.querySelector('small').textContent='Подтвердите профиль в защищённом окне Telegram.';
       const status=sheet.querySelector('.menu-demo-message');status.textContent='Подготовка защищённого входа…';
       next.textContent='Войти через Telegram';
-      let challenge;
-      body.querySelector('input').onchange=e=>next.disabled=!e.target.checked||!challenge;
-      window.prepareBrowserLogin().then(c=>{challenge=c;status.textContent='';next.disabled=!body.querySelector('input').checked;}).catch(e=>{status.textContent=e.message});
-      next.onclick=()=>{if(next.disabled)return;next.disabled=true;status.textContent='Подтвердите вход в Telegram…';window.runBrowserLogin(challenge).catch(e=>{status.textContent=e.message;});};
+      const consent=body.querySelector('input');
+      consent.checked=false;consent.autocomplete='off';
+      let challenge,busy=false;
+      const active=()=>body.isConnected&&sheet.open;
+      const update=()=>{next.disabled=busy||!consent.checked;consent.disabled=busy;};
+      async function prepare(message=''){
+        busy=true;update();
+        try{challenge=await window.prepareBrowserLogin();if(active())status.textContent=message;}
+        catch(e){if(active())status.textContent=e.message;}
+        finally{busy=false;if(active())update();}
+      }
+      consent.onchange=update;
+      prepare();
+      next.onclick=async()=>{
+        if(next.disabled)return;
+        if(!challenge){await prepare();return;}
+        busy=true;update();status.textContent='Подтвердите вход в Telegram и вернитесь в браузер.';
+        let error;
+        try{await window.runBrowserLogin(challenge);}
+        catch(e){error=e;if(active()){status.textContent=e.message;next.textContent='Повторить вход через Telegram';}}
+        finally{challenge=null;busy=false;if(active()){consent.checked=false;update();if(error)prepare(error.message);}}
+      };
     }
   }
   function puzzle(){
