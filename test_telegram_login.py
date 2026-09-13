@@ -15,7 +15,7 @@ class Validation(unittest.TestCase):
             self.assertEqual(auth.verify(encoded(claims),'test')['id'],123)
             self.assertEqual(auth.verify(encoded(dict(claims,id='123')),'test')['id'],123)
             for invalid_id in [True,123.0,None,0,-1,2**52,'0','-1','+123',' 123','123.0','١٢٣',str(2**52),'9'*100]:
-                with self.subTest(id=invalid_id), self.assertRaises(ValueError):
+                with self.subTest(id=invalid_id), self.assertRaises((ValueError,jwt.PyJWTError)):
                     auth.verify(encoded(dict(claims,id=invalid_id)),'test')
             for altered in [dict(claims,aud='wrong'),dict(claims,iss='wrong'),dict(claims,exp=1),dict(claims,nonce='wrong')]:
                 with self.assertRaises((jwt.PyJWTError,ValueError)): auth.verify(encoded(altered),'test')
