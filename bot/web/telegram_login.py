@@ -39,9 +39,9 @@ def verify(raw, nonce):
     key = keys.get_signing_key_from_jwt(raw).key
     claims = jwt.decode(raw, key, algorithms=['RS256'], audience=settings.bot_token.split(':')[0],
         issuer='https://oauth.telegram.org', options={'require':['exp','iat','iss','aud','sub','nonce','id']})
-    if not hmac.compare_digest(str(claims['nonce']), nonce): raise ValueError()
-    if not -30 <= time.time()-claims['iat'] <= 300: raise ValueError()
-    if type(claims['id']) is not int or not 0 < claims['id'] < 2**52: raise ValueError()
+    if not hmac.compare_digest(str(claims['nonce']), nonce): raise ValueError('nonce_mismatch')
+    if not -30 <= time.time()-claims['iat'] <= 300: raise ValueError('token_age')
+    if type(claims['id']) is not int or not 0 < claims['id'] < 2**52: raise ValueError('id_type_or_range')
     return claims
 
 async def login(request):
@@ -60,6 +60,8 @@ async def login(request):
     except (jwt.PyJWTError, ValueError, TypeError, KeyError) as exc:
         # Log only the error class, never JWTs, profile data or signing material.
         logging.getLogger(__name__).warning('Telegram JWT rejected: %s', type(exc).__name__)
+        if type(exc) is ValueError and str(exc) in ('nonce_mismatch','token_age','id_type_or_range'):
+            logging.getLogger(__name__).warning('Telegram validation check: %s', str(exc))
         raise PermissionError('Telegram не подтвердил вход. Повторите попытку.') from None
     from bot.db.repo import is_user_blocked
     from bot.web.miniapp import call, store
