@@ -4,7 +4,12 @@ const screen=window.FightScreen,status=document.getElementById('data-status'),re
 window.Telegram?.WebApp?.ready();window.Telegram?.WebApp?.expand();
 const pairs=[['Rafa Garcia','Zhu Rong'],['Yousri Belgaroui','Djorden Santos'],['Ignacio Bahamondes','Muslim Salikhov'],['Tim Elliott','Edgar Chairez'],['David Martinez','Dan Ige'],['Waldo Cortes-Acosta','Curtis Blaydes'],['Manon Fiorot','Alexa Grasso'],['Tommy McMillen','Marwan Rahiki'],['Brandon Moreno','Joseph Morales'],['Jean Silva','Jose Delgado'],['Drakkar Klose','Thomas Gantt'],['J.J. Aldrich','Regina Tarin']];
 const ids=['garcia-rongzhu','belgaroui-santos','bahamondes-salikhov','elliott-chairez','martinez-ige','cortes-blaydes','fiorot-grasso','mcmillen-rahiki','moreno-morales','silva-delgado','klose-gantt','aldrich-tarin'];
-const names={};pairs.forEach((p,i)=>p.forEach((n,j)=>{names[n]=window.UFC_SNAPSHOT.fights.find(f=>f.id===ids[i]).fighters[j]}));
+const names={};
+const snapshotFights=Array.isArray(window.UFC_SNAPSHOT?.fights)?window.UFC_SNAPSHOT.fights:[];
+pairs.forEach((p,i)=>{
+  const fight=snapshotFights.find(f=>f?.id===ids[i]);
+  p.forEach((n,j)=>{const translated=fight?.fighters?.[j];if(typeof translated==='string'&&translated)names[n]=translated;});
+});
 Object.assign(names,{'Ryan Garcia':'Райан Гарсия','Conor Benn':'Конор Бенн','Petr Yan':'Пётр Ян','Islam Makhachev':'Ислам Махачев','Alex Pereira':'Алекс Перейра','Conor McGregor':'Конор Макгрегор'});
 Object.assign(names,{'Ramiro Jimenez':'Рамиро Хименес','Rodrigo Vera':'Родриго Вера'});
 const letters={a:'а',b:'б',c:'к',d:'д',e:'е',f:'ф',g:'г',h:'х',i:'и',j:'дж',k:'к',l:'л',m:'м',n:'н',o:'о',p:'п',q:'к',r:'р',s:'с',t:'т',u:'у',v:'в',w:'у',x:'кс',y:'и',z:'з'};
