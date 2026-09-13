@@ -1,13 +1,13 @@
-#app .header .sports.section-carousel{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:none;user-select:none}
+#app .header .sports.section-carousel{display:flex;gap:0;overflow:visible;touch-action:pan-y;user-select:none}
 #app .header .sports.section-carousel::-webkit-scrollbar{display:none}
-#app .header .sports.section-carousel{overflow-anchor:none;justify-content:start}
+#app .header .sports.section-carousel{overflow-anchor:none;justify-content:space-between}
 #app .header .sports.section-carousel>.sport,#app .header .sports.section-carousel>.sport:first-child{flex:0 0 auto;width:max-content;min-width:32px;padding-inline:2px;font-size:10px;white-space:nowrap}
 #app .header .sports.section-carousel .sport-label{white-space:nowrap}
 #app .header .sports.section-carousel>.live-trainer-tab .sport-label{font-size:9px}
 @media(max-width:350px){#app .header .sports.section-carousel>.sport,#app .header .sports.section-carousel>.sport:first-child{font-size:9px}#app .header .sports.section-carousel>.live-trainer-tab .sport-label{font-size:8px}}
-#app .header .sports>.extra-section-tab.active{color:var(--blue)}
-#app .header .sports>.extra-section-tab.active svg{color:var(--blue)}
-#app .header .sports>.extra-section-tab.active .sport-label{color:var(--blue);background:none;-webkit-text-fill-color:var(--blue)}
+#app .header .sports>.extra-section-tab.active{color:#397EAE}
+#app .header .sports>.extra-section-tab.active svg{color:#397EAE}
+#app .header .sports>.extra-section-tab.active .sport-label{color:#397EAE!important;background:none!important;-webkit-text-fill-color:#397EAE!important}
 #app.extra-section-open>:not(.header):not(.bottom-nav):not(.extra-section-screen){display:none!important}
 #app.extra-section-open .header .markets,#app.extra-section-open .header .search-box{display:none!important}
 #app .extra-section-screen{min-height:calc(100dvh - 160px)}
