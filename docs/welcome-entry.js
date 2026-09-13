@@ -48,6 +48,7 @@
     const body=layout('Вы в своей команде.');
     const user=window.Telegram?.WebApp?.initDataUnsafe?.user;
     // Display-only Telegram hints; never use these as trusted identity.
+    const browserLogin=!options.localPreview&&!window.Telegram?.WebApp?.initData;
     const available=options.localPreview||!!window.Telegram?.WebApp?.initData;
     body.innerHTML='<p>Продолжите с вашим профилем.</p><div class="entry-profile"><span class="entry-avatar"></span><div><strong></strong><small></small></div></div><label class="entry-consent"><input type="checkbox" data-server-consent>Я согласен с политикой конфиденциальности.</label><details class="entry-policy"><summary>Политика конфиденциальности</summary><p>При входе сервер проверяет данные Telegram.</p></details>';
     const name=options.localPreview?'Ла Марсель':user?.first_name||'Пользователь Telegram';
@@ -59,6 +60,16 @@
     body.querySelector('input').onchange=e=>next.disabled=!e.target.checked||!available;
     if(!available)sheet.querySelector('.menu-demo-message').textContent='Откройте приложение кнопкой бота в Telegram. В этом браузере Telegram ID недоступен.';
     next.onclick=()=>{if(!next.disabled)puzzle()};
+    if(browserLogin){
+      body.querySelector('strong').textContent='Вход через Telegram';
+      body.querySelector('small').textContent='Подтвердите профиль в защищённом окне Telegram.';
+      const status=sheet.querySelector('.menu-demo-message');status.textContent='Подготовка защищённого входа…';
+      next.textContent='Войти через Telegram';
+      let challenge;
+      body.querySelector('input').onchange=e=>next.disabled=!e.target.checked||!challenge;
+      window.prepareBrowserLogin().then(c=>{challenge=c;status.textContent='';next.disabled=!body.querySelector('input').checked;}).catch(e=>{status.textContent=e.message});
+      next.onclick=()=>{if(next.disabled)return;next.disabled=true;status.textContent='Подтвердите вход в Telegram…';window.runBrowserLogin(challenge).catch(e=>{status.textContent=e.message;});};
+    }
   }
   function puzzle(){
     const body=layout('Соберите купон');

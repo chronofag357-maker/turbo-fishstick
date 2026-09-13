@@ -22,7 +22,11 @@
     return current;
   }
   function track(kind,details={}){if(enabled&&current)api('actions',{kind,...details}).catch(()=>{});}
-  window.ServerAccount={enabled,get current(){return current},api,refresh,track};
+  async function acceptBrowserToken(value){
+    token=value;sessionStorage.setItem('p2p-session',token);await refresh();
+    window.dispatchEvent(new Event('freebk-account-change'));
+  }
+  window.ServerAccount={enabled,get current(){return current},api,refresh,track,acceptBrowserToken};
   if(!enabled)return;
   window.freebkMenuContent=()=>{
     const stats=current?.stats;

@@ -60,7 +60,7 @@ async def private_middleware(request, handler):
     try:
         if request.method != 'GET' and request.content_type != 'application/json':
             raise ValueError('Ожидается JSON.')
-        if request.path != '/api/private/login':
+        if request.path not in ('/api/private/login', '/api/private/telegram/challenge', '/api/private/telegram/login'):
             token = request.headers.get('Authorization', '').removeprefix('Bearer ')
             request['identity'] = await call(store.identity, token)
             request['token'] = token
@@ -283,6 +283,9 @@ async def scheduler(app):
 
 
 def install(app):
+    from bot.web.telegram_login import challenge, login as browser_login
+    app.router.add_post('/api/private/telegram/challenge', challenge)
+    app.router.add_post('/api/private/telegram/login', browser_login)
     app.on_startup.append(startup)
     app.cleanup_ctx.append(scheduler)
     for method, path, handler in [('POST', 'login', login), ('GET', 'me', me), ('POST', 'logout', logout),

@@ -5,3 +5,4 @@ pydantic-settings==2.6.1
 SQLAlchemy==2.0.36
 aiosqlite==0.20.0
 livekit-api==1.2.1
+PyJWT[crypto]==2.10.1
