@@ -74,5 +74,5 @@ async def login(request):
     if await is_user_blocked(user['id']): raise PermissionError('Аккаунт заблокирован.')
     token = await call(store.login,user['id'],str(user.get('name',''))[:200],user['id'] in settings.admin_id_set)
     response=web.json_response({'token':token})
-    response.del_cookie('__Host-tg-login',path='/',secure=True,httponly=True,samesite='Strict')
+    response.set_cookie('__Host-tg-login','',path='/',secure=True,httponly=True,samesite='Strict',max_age=0,expires='Thu, 01 Jan 1970 00:00:00 GMT')
     return response
