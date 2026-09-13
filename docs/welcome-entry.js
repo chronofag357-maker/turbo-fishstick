@@ -123,11 +123,17 @@
     };
     paint();
     sheet.querySelector('.entry-back').onclick=profile;
-    next.onclick=()=>{
+    next.onclick=async()=>{
       if(!solved||next.disabled)return;
-      if(options.localPreview){options.onPreview();sheet.close();return}
-      // Existing handler validates signed initData and allowlist on the backend.
-      body.querySelector('[data-server-login]').click();
+      next.disabled=true;next.textContent='Открываем кабинет…';status.textContent='';
+      try{
+        if(options.localPreview){await options.onPreview();sheet.close();return}
+        // Direct call: signed initData and allowlist still checked by the server.
+        if(!window.ServerAccount?.loginFromTelegram)throw new Error('Обновите страницу: модуль входа ещё не загрузился.');
+        await window.ServerAccount.loginFromTelegram();
+        sheet.close();
+      }catch(error){status.textContent=error.message||'Не удалось войти. Попробуйте ещё раз.';}
+      finally{next.disabled=false;next.textContent='Открыть кабинет →';}
     };
     slider.focus();
   }

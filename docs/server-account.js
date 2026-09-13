@@ -28,7 +28,13 @@
     token=value;sessionStorage.setItem('p2p-session',token);await refresh();
     window.dispatchEvent(new Event('freebk-account-change'));
   }
-  window.ServerAccount={enabled,get current(){return current},api,refresh,track,acceptBrowserToken};
+  async function loginFromTelegram(){
+    const initData=window.Telegram?.WebApp?.initData;
+    if(!initData)throw new Error('Откройте приложение заново кнопкой бота в Telegram.');
+    const result=await api('login',{initData,consent:true});
+    await acceptBrowserToken(result.token);
+  }
+  window.ServerAccount={enabled,get current(){return current},api,refresh,track,acceptBrowserToken,loginFromTelegram};
   if(!enabled)return;
   window.freebkMenuContent=()=>{
     const stats=current?.stats;
