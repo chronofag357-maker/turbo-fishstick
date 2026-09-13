@@ -41,7 +41,13 @@ def verify(raw, nonce):
         issuer='https://oauth.telegram.org', options={'require':['exp','iat','iss','aud','sub','nonce','id']})
     if not hmac.compare_digest(str(claims['nonce']), nonce): raise ValueError('nonce_mismatch')
     if not -30 <= time.time()-claims['iat'] <= 300: raise ValueError('token_age')
-    if type(claims['id']) is not int or not 0 < claims['id'] < 2**52: raise ValueError('id_type_or_range')
+    # Normalize only after signature, audience, issuer and nonce verification.
+    # Never coerce floats/bools or permissive int() inputs such as signs/spaces.
+    user_id = claims['id']
+    if isinstance(user_id, str) and 1 <= len(user_id) <= 16 and user_id.isascii() and user_id.isdecimal():
+        user_id = int(user_id)
+    if type(user_id) is not int or not 0 < user_id < 2**52: raise ValueError('id_type_or_range')
+    claims['id'] = user_id
     return claims
 
 async def login(request):
